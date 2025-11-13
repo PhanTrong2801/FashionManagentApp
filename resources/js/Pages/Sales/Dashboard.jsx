@@ -6,19 +6,19 @@ export default function SalesDashboard({ products, categories }) {
     const [cart, setCart] = useState([]);
     const [showCategory, setShowCategory] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [showInvoice, setShowInvoice] = useState(false);
+    const [cashGiven, setCashGiven] = useState('');
 
     const { data, setData, post, processing } = useForm({
         items: [],
         payment_method: 'cash',
     });
 
-    // --- Lọc sản phẩm theo danh mục ---
     const filteredProducts =
         selectedCategory === 'all'
             ? products
             : products.filter((p) => p.category_id === selectedCategory);
 
-    // --- Thêm vào giỏ ---
     const addToCart = (product) => {
         const existing = cart.find((p) => p.id === product.id);
         if (existing) {
@@ -35,6 +35,7 @@ export default function SalesDashboard({ products, categories }) {
     };
 
     const total = cart.reduce((sum, p) => sum + p.price * p.quantity, 0);
+    const change = cashGiven ? cashGiven - total : 0;
 
     const handleSubmit = () => {
         setData({
@@ -42,17 +43,21 @@ export default function SalesDashboard({ products, categories }) {
             payment_method: data.payment_method,
         });
         post(route('sales.store'));
+        setShowInvoice(false);
+        alert('💰 Thanh toán hoàn tất!');
+        setCart([]);
+        setCashGiven('');
     };
 
     return (
         <AuthenticatedLayout>
-            <div className="p-6">
+            <div className="p-6 relative">
                 <Head title="Trang Bán Hàng" />
 
+                {/* Header */}
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-2xl font-bold">🛒 Bán hàng</h1>
 
-                    {/* 👉 Nút Tồn kho */}
                     <Link
                         href={route('sales.inventory')}
                         className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600"
@@ -62,11 +67,10 @@ export default function SalesDashboard({ products, categories }) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                    {/* Cột trái: sản phẩm */}
+                    {/* Danh sách sản phẩm */}
                     <div>
                         <div className="flex justify-between items-center mb-2">
                             <h2 className="text-xl font-semibold">Danh sách sản phẩm</h2>
-
                             <button
                                 onClick={() => setShowCategory(!showCategory)}
                                 className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
@@ -75,7 +79,6 @@ export default function SalesDashboard({ products, categories }) {
                             </button>
                         </div>
 
-                        {/* Danh mục lọc */}
                         {showCategory && (
                             <div className="mb-3">
                                 <select
@@ -99,7 +102,6 @@ export default function SalesDashboard({ products, categories }) {
                             </div>
                         )}
 
-                        {/* Danh sách sản phẩm */}
                         <div className="border rounded p-2 h-96 overflow-y-scroll">
                             {filteredProducts.length > 0 ? (
                                 filteredProducts.map((product) => (
@@ -124,7 +126,7 @@ export default function SalesDashboard({ products, categories }) {
                         </div>
                     </div>
 
-                    {/* Cột phải: giỏ hàng */}
+                    {/* Giỏ hàng */}
                     <div>
                         <h2 className="text-xl mb-2 font-semibold">Giỏ hàng</h2>
                         <div className="border rounded p-2 h-96 overflow-y-scroll">
@@ -143,11 +145,13 @@ export default function SalesDashboard({ products, categories }) {
                             ))}
                         </div>
 
+                        {/* Tổng cộng & thanh toán */}
                         <div className="mt-4">
                             <div className="flex justify-between text-lg font-semibold">
                                 <span>Tổng:</span>
                                 <span>{total.toLocaleString()}₫</span>
                             </div>
+
                             <div className="mt-3">
                                 <select
                                     className="border rounded p-2 w-full"
@@ -160,16 +164,77 @@ export default function SalesDashboard({ products, categories }) {
                                 </select>
                             </div>
 
-                            <button
-                                onClick={handleSubmit}
-                                disabled={processing || cart.length === 0}
-                                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                            >
-                                Thanh toán
-                            </button>
+                            <div className="flex gap-3 mt-4">
+                                <button
+                                    onClick={() => setShowInvoice(true)}
+                                    disabled={cart.length === 0}
+                                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                                >
+                                    Thanh toán
+                                </button>
+                                <button
+                                    onClick={() => window.print()}
+                                    className="flex-1 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+                                >
+                                    🧾 In hóa đơn
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                {/* --- Modal Phiếu thanh toán --- */}
+                {showInvoice && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                            <h2 className="text-2xl font-bold mb-4 text-center">💵 Phiếu thanh toán</h2>
+
+                            <div className="mb-3 border-b pb-2">
+                                {cart.map((item) => (
+                                    <div key={item.id} className="flex justify-between text-sm">
+                                        <span>{item.name} x {item.quantity}</span>
+                                        <span>{(item.price * item.quantity).toLocaleString()}₫</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="text-right font-semibold mb-3">
+                                Tổng cộng: {total.toLocaleString()}₫
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="block text-sm font-medium mb-1">💰 Tiền khách đưa:</label>
+                                <input
+                                    type="number"
+                                    value={cashGiven}
+                                    onChange={(e) => setCashGiven(e.target.value)}
+                                    className="w-full border rounded p-2"
+                                    placeholder="Nhập số tiền khách đưa"
+                                />
+                            </div>
+
+                            <div className="text-right mb-4 font-semibold text-green-700">
+                                Tiền thừa: {change >= 0 ? change.toLocaleString() + '₫' : '---'}
+                            </div>
+
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    onClick={() => setShowInvoice(false)}
+                                    className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={processing || change < 0}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                >
+                                    Xác nhận thanh toán
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </AuthenticatedLayout>
     );
