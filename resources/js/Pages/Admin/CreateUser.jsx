@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 
 export default function CreateUser() {
-    // --- LOGIC GỐC (KHÔNG THAY ĐỔI) ---
     const [form, setForm] = useState({
         name: '',
         email: '',
@@ -16,9 +15,9 @@ export default function CreateUser() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        router.post('/admin/create-user', form); // <--- Giữ nguyên logic gốc
+        router.post('/admin/create-user', form);
     };
-    // --- KẾT THÚC LOGIC GỐC ---
+   
 
 
     // --- GIAO DIỆN MỚI ---

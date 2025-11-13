@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -13,10 +14,12 @@ class SalesController extends Controller
 {
     public function index()
     {
+        $categories = Category::all();
         $products = Product::orderBy('name')->get();
 
         return Inertia::render('Sales/Dashboard', [
             'products' => $products,
+            'categories' => $categories,
         ]);
     }
 

@@ -30,5 +30,7 @@ class DatabaseSeeder extends Seeder
             'password' => 'trong2801',
             'role' => 'admin',
         ]);
+
+        
     }
 }
