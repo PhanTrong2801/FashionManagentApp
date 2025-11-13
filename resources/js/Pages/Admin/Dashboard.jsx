@@ -1,5 +1,6 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 export default function AdminDashboard({
     todayRevenue,
@@ -10,6 +11,7 @@ export default function AdminDashboard({
     lowStock,
 }) {
     return (
+        <AuthenticatedLayout>
         <div className="p-6">
             <Head title="Trang Quản Lý" />
             <h1 className="text-3xl font-bold mb-6">👑 Trang Quản Lý Bán Hàng</h1>
@@ -84,5 +86,6 @@ export default function AdminDashboard({
                 )}
             </div>
         </div>
+        </AuthenticatedLayout>
     );
 }

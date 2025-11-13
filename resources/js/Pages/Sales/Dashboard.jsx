@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import { Head, useForm  } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 
 export default function SalesDashboard({ products }) {
@@ -35,6 +36,7 @@ export default function SalesDashboard({ products }) {
     };
 
     return (
+        <AuthenticatedLayout>
         <div className="p-6">
             <Head title="Trang Bán Hàng" />
             <h1 className="text-2xl font-bold mb-4">🛒 Bán hàng</h1>
@@ -103,5 +105,6 @@ export default function SalesDashboard({ products }) {
                 </div>
             </div>
         </div>
+    </AuthenticatedLayout>
     );
 }

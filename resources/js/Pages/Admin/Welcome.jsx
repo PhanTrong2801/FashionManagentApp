@@ -1,10 +1,13 @@
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 export default function AdminWelcome() {
     return (
-        // Thêm lớp bg-gradient-to-br với màu sắc nhẹ nhàng và hiệu ứng animate-gradient
+       
+        
         <div className="relative flex flex-col items-center min-h-screen pt-6 sm:justify-center sm:pt-0 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 animate-gradient">
+             <AuthenticatedLayout>
             <Head title="Xin chào Admin" />
 
             {/* Logo placeholder - giữ nguyên */}
@@ -45,6 +48,8 @@ export default function AdminWelcome() {
                     </Link>
                 </div>
             </div>
+        </AuthenticatedLayout>
         </div>
+       
     );
 }
