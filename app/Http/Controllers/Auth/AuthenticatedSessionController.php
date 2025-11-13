@@ -38,19 +38,24 @@ class AuthenticatedSessionController extends Controller
         if(!Auth::attempt($request->only('email','password'),$request->boolean('remember'))){
             return back()->withErrors([
                 'email' => 'Thông tin đăng nhập không chính xác.'
-            ]);
+            ])->onlyInput('email');
         }
 
         $request->session()->regenerate();
 
         $user = Auth::user();
 
-        if($user->role ==='admin'){
-            return redirect()->intended(route('admin.dashboard', absolute: false));
+        if($user->role === 'admin'){
+            return redirect()->route('admin.welcome');
         }
-
-        return redirect()->intended(route('sales.dashboard', absolute: false));
-       
+        if($user->role === 'user'){
+            return redirect()->route('sales.dashboard');
+        }
+        
+       Auth::logout();
+       return redirect()->route('login')->withErrors([
+            'email'=>'Tai khoan khong hop le!!',
+       ]);
         
     }
 

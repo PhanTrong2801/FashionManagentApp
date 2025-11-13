@@ -14,7 +14,7 @@ class AdminController extends Controller
         // Thong ke doanh thu
         $todayRevenue = Order::whereDate('created_at',today())->sum('total_amount');
 
-        $monthRevenue = Order::whereMonth('created_at',now()->month)->sum('total_price');
+        $monthRevenue = Order::whereMonth('created_at',now()->month)->sum('total_amount');
 
         $totalOrders = Order::count();
         $totalProducts = Product::count();
@@ -40,5 +40,9 @@ class AdminController extends Controller
             'topProducts' => $topProducts,
             'lowStock' => $lowStock,
         ]);
+    }
+
+    public function welcome(){
+        return \Inertia\Inertia::render('Admin/Welcome');
     }
 }
