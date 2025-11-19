@@ -61,6 +61,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:user')
         ->name('sales.store');
 
+    //Don hang
+    Route::get('/sales/invoices', [SalesController::class, 'invoices'])->name('sales.invoices');
+
      // Neu là admin -> trang chào mừng
     Route::get('/admin/welcome',[AdminController::class, 'welcome'])
         ->middleware('role:admin')

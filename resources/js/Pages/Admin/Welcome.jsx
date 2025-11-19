@@ -10,13 +10,6 @@ export default function AdminWelcome() {
              <AuthenticatedLayout>
             <Head title="Xin chào Admin" />
 
-            {/* Logo placeholder - giữ nguyên */}
-            {/* <div>
-                 <Link href="/">
-                    <YourLogoComponent className="w-20 h-20" />
-                 </Link>
-            </div> */}
-
             <div className="w-full p-6 mt-6 overflow-hidden text-center bg-white shadow-md sm:max-w-md sm:rounded-lg">
                 <h1 className="text-3xl font-bold text-gray-800 mb-4">
                     👑 Xin Chào, Admin!

@@ -81,13 +81,24 @@ export default function SalesDashboard({ products, categories }) {
 
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-2xl font-bold">🛒 Bán hàng</h1>
-
-                    <Link
+                    <div className='flex '>
+                        <Link
                         href={route('sales.inventory')}
                         className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600"
                     >
                         📦 Tồn kho
                     </Link>
+
+                    <Link
+                        href={route('sales.invoices')}
+                        className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-500"
+                    >
+                        📜 Lịch sử hóa đơn
+
+                    </Link>
+
+                    </div>
+                    
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

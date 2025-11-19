@@ -10,14 +10,25 @@ export default function AuthenticatedLayout({ children }) {
     router.post(route('logout')); // Gọi route logout Laravel
   };
 
+  const dashboardRoute = auth.user.role === 'admin' 
+    ? route('admin.welcome') // Route cho Admin
+    : route('sales.dashboard');
+
+  const displayText = auth.user.role === 'admin' 
+    ? 'Trang Quản Trị' 
+    : 'Bán Hàng';
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-lg font-semibold text-gray-800">
-            {auth.user.role === 'admin' ? 'Trang Quản Trị' : 'Bán Hàng'}
-          </h1>
+          <Link 
+            href={dashboardRoute} 
+            className="text-lg font-semibold text-gray-800 hover:text-gray-900 transition duration-150 ease-in-out"
+          >
+            {displayText}
+          </Link>
 
           {/* User Dropdown */}
           <div className="relative">
