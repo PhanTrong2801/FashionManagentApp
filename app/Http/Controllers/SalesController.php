@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Order;
@@ -19,10 +20,12 @@ class SalesController extends Controller
     {
         $categories = Category::all();
         $products = Product::orderBy('name')->get();
+        $customers = Customer::orderBy('name')->get();
 
         return Inertia::render('Sales/Dashboard', [
             'products' => $products,
             'categories' => $categories,
+            'customers' => $customers,
         ]);
     }
 
@@ -34,8 +37,9 @@ class SalesController extends Controller
             'items.*.id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'payment_method' => 'required|string',
-            'customer_money' => 'nullable|numeic|min:0',
-            'change_money' => 'nullable|numeric',
+            'customer_money' => 'nullable|numeric|min:0',
+            'change_money' => 'nullable|numeric|min;0',
+            'customer_id' =>'nullable|exists:customers,id',
         ]);
 
         //dao bao tinh toan ven du lieu
@@ -50,6 +54,7 @@ class SalesController extends Controller
 
         $order = Order::create([
             'user_id' => Auth::id(),
+            'customer_id'=>$validated['customer_id']??null,
             'total_amount' => $total,
             'payment_method' => $validated['payment_method'],
             'status' => 'paid',
@@ -61,6 +66,7 @@ class SalesController extends Controller
             'payment_method'=> $validated['payment_method'],
             'customer_money'=> $validated['customer_money'] ??0,
             'change_money' => $validated['change_money'] ??0,
+            'customer_id' => $validated['customer_id']?? null,
         ]);
 
         foreach ($validated['items'] as $item) {

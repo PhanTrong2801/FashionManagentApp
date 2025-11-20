@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController as ControllersProductController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -23,18 +24,6 @@ Route::get('/', function (){
     return redirect()->route('sales.dashboard');
 });
 
-// Route::get('/', function () {
-//     return Inertia::render('Welcome', [
-//         'canLogin' => Route::has('login'),
-//         'canRegister' => Route::has('register'),
-//         'laravelVersion' => Application::VERSION,
-//         'phpVersion' => PHP_VERSION,
-//     ]);
-// });
-
-// Route::get('/dashboard', function () {
-//     return Inertia::render('Dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -63,6 +52,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Don hang
     Route::get('/sales/invoices', [SalesController::class, 'invoices'])->name('sales.invoices');
+
+    //Khachhang
+    Route::get('/sales/customers', [CustomerController::class, 'index'])->name('sales.customers');
+    Route::post('/sales/customers', [CustomerController::class, 'store'])->name('sales.customers.store');
+
 
      // Neu là admin -> trang chào mừng
     Route::get('/admin/welcome',[AdminController::class, 'welcome'])

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-export default function SalesDashboard({ products, categories }) {
+export default function SalesDashboard({ products, categories, customers }) {
     //Quan ly nhieu don hang
     const [carts, setCarts] = useState([
         {id: 1, items: []}
@@ -43,6 +43,11 @@ export default function SalesDashboard({ products, categories }) {
         }
         setCarts(updated);
     }
+
+    //khach hang
+    const [selectedCustomer, setSelectedCustomer] = useState(null);
+    const [showCustomerModal, setShowCustomerModal] = useState(false);
+    const [searchCustomer, setSearchCustomer] = useState('');
 
     const [showCategory, setShowCategory] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('all');
@@ -108,6 +113,7 @@ export default function SalesDashboard({ products, categories }) {
         setData({
             items: currentCart.items.map(p => ({ id: p.id, quantity: p.quantity })),
             payment_method: data.payment_method,
+            customer_id: selectedCustomer ? selectedCustomer.id :null,
         });
 
         post(route('sales.store'), {
@@ -141,11 +147,18 @@ export default function SalesDashboard({ products, categories }) {
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-2xl font-bold">🛒 Bán hàng</h1>
                     <div className='flex gap-2'>
-                        <Link
+                    <Link
                         href={route('sales.inventory')}
                         className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600"
                     >
                         📦 Tồn kho
+                    </Link>
+
+                    <Link
+                        href={route('sales.customers')}
+                        className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-600"
+                    >
+                        👥 Khách hàng
                     </Link>
 
                     <Link
@@ -239,6 +252,15 @@ export default function SalesDashboard({ products, categories }) {
                         </div>
 
                         <h2 className="text-xl mb-2 font-semibold">Giỏ hàng</h2>
+                        
+                        <div className="mb-3">
+                            <button
+                                onClick={() => setShowCustomerModal(true)}
+                                className="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                            >
+                                {selectedCustomer ? `👤 ${selectedCustomer.name}` : "Chọn khách hàng"}
+                            </button>
+                        </div>
                         <div className="border rounded p-2 h-96 overflow-y-scroll">
                             {currentCart.items.map(item => (
                                 <div key={item.id} className="flex justify-between py-1 border-b">
@@ -391,6 +413,53 @@ export default function SalesDashboard({ products, categories }) {
                     </div>
                 </div>
             )}
+             {/* MODAL CHON KHACH HANG */}
+             {showCustomerModal && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-xl w-96 shadow-lg">
+
+                        <h2 className="text-xl font-bold mb-3">Chọn khách hàng</h2>
+
+                        <input
+                            type="text"
+                            placeholder="Tìm theo tên hoặc số điện thoại..."
+                            className="border p-2 rounded w-full mb-3"
+                            value={searchCustomer}
+                            onChange={(e) => setSearchCustomer(e.target.value)}
+                        />
+
+                        <div className="h-64 overflow-y-scroll border rounded p-2">
+                            {customers
+                                .filter(c =>
+                                    c.name.toLowerCase().includes(searchCustomer.toLowerCase()) ||
+                                    c.phone.includes(searchCustomer)
+                                )
+                                .map(c => (
+                                    <div
+                                        key={c.id}
+                                        className="py-2 px-3 border-b hover:bg-gray-100 cursor-pointer"
+                                        onClick={() => {
+                                            setSelectedCustomer(c);
+                                            setShowCustomerModal(false);
+                                        }}
+                                    >
+                                        <div className="font-semibold">{c.name}</div>
+                                        <div className="text-sm text-gray-600">{c.phone}</div>
+                                    </div>
+                                ))}
+                        </div>
+
+                        <button
+                            className="mt-3 w-full bg-gray-500 text-white py-2 rounded"
+                            onClick={() => setShowCustomerModal(false)}
+                        >
+                            Đóng
+                        </button>
+
+                    </div>
+                </div>
+            )}
+
         </AuthenticatedLayout>
     );
 }
