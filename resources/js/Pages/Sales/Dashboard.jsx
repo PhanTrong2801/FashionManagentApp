@@ -3,7 +3,47 @@ import { Head, useForm, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 export default function SalesDashboard({ products, categories }) {
-    const [cart, setCart] = useState([]);
+    //Quan ly nhieu don hang
+    const [carts, setCarts] = useState([
+        {id: 1, items: []}
+    ]);
+    const [activeCart, setActiveCart] = useState(1);
+    const currentCart = carts.find(c => c.id === activeCart);
+    const switchCart = (id) => setActiveCart(id);
+    const addNewCart = () =>{
+        const newId = Date.now();
+        setCarts([...carts, {id: newId, items: []}]);
+        setActiveCart(newId);
+    };
+    const updateCartItems = (items) =>{
+        setCarts(carts.map(c =>
+            c.id === activeCart ? {...c, items} :c
+        ));
+    }
+    const handleDeleteCart = (id) => {
+        const cartToDelete = carts.find(c => c.id ===id);
+
+        if(!cartToDelete) return;
+
+        if(cartToDelete.items.length >0){
+            if(!confirm("Đơn hàng này đang có sản phẩm. Bạn có chắc muốn xóa?")){
+                return;
+            }
+        }
+        const updated = carts.filter(c =>c.id !==id);
+
+        if(id === activeCart){
+            if(updated.length ===0 ){
+                const newId = Date.now();
+                setCarts([{ id: newId, items: []}]);
+                setActiveCart(newId);
+            }else{
+                setActiveCart(updated[0].id);
+            }
+        }
+        setCarts(updated);
+    }
+
     const [showCategory, setShowCategory] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -18,27 +58,37 @@ export default function SalesDashboard({ products, categories }) {
         payment_method: 'cash',
     });
 
+    
+
     const filteredProducts =
         selectedCategory === 'all'
             ? products
             : products.filter((p) => p.category_id === selectedCategory);
 
     const addToCart = (product) => {
-        const existing = cart.find((p) => p.id === product.id);
+        const existing = currentCart.items.find((p) => p.id === product.id);
+        let updated;
+
         if (existing) {
-            setCart(cart.map((p) =>
-                p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
-            ));
+            updated = currentCart.items.map((p) =>
+                p.id === product.id ? {...p, quantity:p.quantity +1} : p
+            );
         } else {
-            setCart([...cart, { ...product, quantity: 1 }]);
+            updated = [...currentCart.items, {...product, quantity: 1}];
         }
+
+        updateCartItems(updated);
     };
 
     const updateQty = (id, qty) => {
-        setCart(cart.map(p => p.id === id ? { ...p, quantity: qty } : p));
+       updateCartItems(
+        currentCart.items.map(p =>
+            p.id === id ? {...p, quantity:qty} : p
+        )
+       );
     };
 
-    const total = cart.reduce((sum, p) => sum + p.price * p.quantity, 0);
+    const total = currentCart.items.reduce((sum,p) => sum + p.price * p.quantity, 0);
 
     // Mở modal thanh toán
     const handleOpenPayment = () => {
@@ -56,15 +106,24 @@ export default function SalesDashboard({ products, categories }) {
     // Xác nhận thanh toán
     const handleConfirmPayment = () => {
         setData({
-            items: cart.map(p => ({ id: p.id, quantity: p.quantity })),
+            items: currentCart.items.map(p => ({ id: p.id, quantity: p.quantity })),
             payment_method: data.payment_method,
         });
 
         post(route('sales.store'), {
             onSuccess: () => {
                 alert("Thanh toán thành công!");
+                //xoa don thanh cong
+                setCarts(carts.filter(c => c.id !== activeCart));
+
+                //chuyen don con lai(neu co)
+                if(carts.length >1){
+                    setActiveCart(carts[0].id);
+                }else{
+                    addNewCart();
+                }
+
                 setShowPayModal(false);
-                setCart([]);
             }
         });
     };
@@ -81,7 +140,7 @@ export default function SalesDashboard({ products, categories }) {
 
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-2xl font-bold">🛒 Bán hàng</h1>
-                    <div className='flex '>
+                    <div className='flex gap-2'>
                         <Link
                         href={route('sales.inventory')}
                         className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600"
@@ -101,7 +160,7 @@ export default function SalesDashboard({ products, categories }) {
                     
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 ">
                     {/* Cột trái */}
                     <div>
                         <div className="flex justify-between mb-2">
@@ -148,9 +207,40 @@ export default function SalesDashboard({ products, categories }) {
 
                     {/* Cột phải */}
                     <div>
+                        <div className='flex gap-2 mb-2'>
+                            {carts.map(cart => (
+                                <div key={cart.id} className="flex items-center ">
+                                    <button 
+                                        onClick={()=> switchCart(cart.id)}
+                                        className={`px-3 py-1 rounded-l
+                                            ${activeCart === carts.id
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-300 hover:bg-gray-400'}
+                                            `}
+                                    >
+                                        Đơn {cart.id.toString().slice(-4)}
+                                    </button>
+                                    
+                                    <button 
+                                        onClick={()=> handleDeleteCart(cart.id)}
+                                        className="text-red-600 font-bold px-1 py-1 rounded-r hover:text-red-800 bg-gray-300 hover:bg-gray-400"
+                                    >
+                                        x
+                                    </button>
+
+                                </div>
+                            ))}
+                            <button
+                                onClick={addNewCart}
+                                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                            >
+                                +
+                            </button>
+                        </div>
+
                         <h2 className="text-xl mb-2 font-semibold">Giỏ hàng</h2>
                         <div className="border rounded p-2 h-96 overflow-y-scroll">
-                            {cart.map(item => (
+                            {currentCart.items.map(item => (
                                 <div key={item.id} className="flex justify-between py-1 border-b">
                                     <span>{item.name}</span>
                                     <input
@@ -163,6 +253,7 @@ export default function SalesDashboard({ products, categories }) {
                                     <span>{(item.price * item.quantity).toLocaleString()}₫</span>
                                 </div>
                             ))}
+                            
                         </div>
 
                         <div className="mt-4">
@@ -184,7 +275,7 @@ export default function SalesDashboard({ products, categories }) {
                             <div className="flex gap-3 mt-4">
                                 <button
                                     onClick={handleOpenPayment}
-                                    disabled={cart.length === 0}
+                                    disabled={currentCart.items.length === 0}
                                     className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                                 >
                                     Thanh toán
@@ -192,7 +283,7 @@ export default function SalesDashboard({ products, categories }) {
 
                                 <button
                                     onClick={handleOpenPrint}
-                                    disabled={cart.length === 0}
+                                    disabled={currentCart.items.length === 0}
                                     className="flex-1 bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800"
                                 >
                                     In hóa đơn
@@ -210,7 +301,7 @@ export default function SalesDashboard({ products, categories }) {
                         <h2 className="text-xl font-bold mb-3">Xác nhận thanh toán</h2>
 
                         <div className="border p-3 rounded mb-3">
-                            {cart.map(item => (
+                            {currentCart.items.map(item => (
                                 <div key={item.id} className="flex justify-between">
                                     <span>{item.name} x {item.quantity}</span>
                                     <span>{(item.price * item.quantity).toLocaleString()}₫</span>
@@ -264,7 +355,7 @@ export default function SalesDashboard({ products, categories }) {
                         <h2 className="text-xl font-bold mb-3">Hóa đơn</h2>
 
                         <div className="border p-3 rounded mb-4">
-                            {cart.map(item => (
+                            {currentCart.items.map(item => (
                                 <div key={item.id} className="flex justify-between py-1">
                                     <span>{item.name} x {item.quantity}</span>
                                     <span>{(item.price * item.quantity).toLocaleString()}₫</span>
