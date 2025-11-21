@@ -2,65 +2,122 @@ import React from "react";
 import { Head, Link } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
+// Hàm helper để định dạng tiền tệ
+const formatCurrency = (amount) => {
+    const num = Math.round(amount || 0);
+    return num.toLocaleString('vi-VN') + '₫';
+};
+
+// Hàm trả về icon cho phương thức thanh toán
+const getPaymentMethodIcon = (method) => {
+    switch (method) {
+        case "cash":
+            return "💵 Tiền mặt";
+        case "card":
+            return "💳 Thẻ";
+        case "bank":
+            return "🏦 Chuyển khoản";
+        default:
+            return method;
+    }
+};
+
+
 export default function CustomerHistory({ customer, invoices }) {
+   
     return (
         <AuthenticatedLayout>
             <Head title={"Lịch sử mua hàng – " + customer.name} />
 
-            <div className="p-6">
-                <h1 className="text-2xl font-bold mb-4">
-                    🧾 Lịch sử mua hàng: {customer.name}
-                </h1>
+            <div className="min-h-screen bg-gray-50 p-6">
+                
+              
+                <div className="flex justify-between items-center mb-6 p-4 bg-white rounded-xl shadow-md">
+                    <h1 className="text-3xl font-extrabold text-blue-800">
+                        🧾 LỊCH SỬ MUA HÀNG
+                    </h1>
+                    <div className='flex gap-3 text-sm'>
+                        
+                        <Link
+                            href={route('sales.customers')}
+                            className="flex items-center bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition duration-150"
+                        >
+                            ← Quay lại Khách hàng
+                        </Link>
+                    </div>
+                </div>
 
-                <Link
-                    href="/sales/customers"
-                    className="text-blue-600 underline mb-4 inline-block"
-                >
-                    ← Quay lại danh sách khách hàng
-                </Link>
+                
+                <div className="mb-6 p-4 bg-white rounded-xl shadow-md border-l-4 border-purple-600">
+                    <h2 className="text-xl font-semibold text-gray-800">
+                        Khách hàng: <span className="text-purple-700">{customer.name}</span>
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                        SĐT: {customer.phone} | Địa chỉ: {customer.address}
+                    </p>
+                    
+                    <p className="text-sm font-medium text-green-700 mt-1">
+                        Điểm tích lũy: {customer.points || 0} (Hạng: {customer.rank || "Member"})
+                    </p>
+                </div>
 
-                <div className="bg-white shadow rounded p-4">
-                    <table className="w-full border">
+
+                <div className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200">
+                    <table className="w-full text-left">
                         <thead>
-                            <tr className="bg-gray-100">
-                                <th className="border p-2">Mã hóa đơn</th>
-                                <th className="border p-2">Ngày</th>
-                                <th className="border p-2">Tổng tiền</th>
-                                <th className="border p-2">Phương thức</th>
-                                <th className="border p-2">Chi tiết</th>
+                            <tr className="bg-blue-600 text-white shadow-md">
+                                <th className="p-4 w-1/12 text-center">ID HĐ</th>
+                                <th className="p-4 w-1/6 text-center">Ngày Mua</th>
+                                <th className="p-4 w-1/6 text-center">Tổng Tiền</th>
+                                <th className="p-4 w-1/6 text-center">P.Thức TT</th>
+                                <th className="p-4 w-5/12">Chi tiết sản phẩm</th>
                             </tr>
                         </thead>
 
                         <tbody>
                             {invoices.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="text-center py-3 text-gray-500">
-                                        Khách hàng chưa có mua hàng nào
+                                    <td colSpan="5" className="text-center py-10 text-gray-500 text-lg">
+                                        Khách hàng chưa có lịch sử mua hàng nào.
                                     </td>
                                 </tr>
                             ) : (
-                                invoices.map((invoice) => (
-                                    <tr key={invoice.id}>
-                                        <td className="border p-2 text-center">{invoice.id}</td>
-                                        <td className="border p-2 text-center">
-                                            {new Date(invoice.created_at).toLocaleString()}
+                                invoices.map((invoice, index) => (
+                                    <tr 
+                                        key={invoice.id}
+                                        className={`hover:bg-blue-50 transition ${index % 2 !== 0 ? 'bg-gray-100' : 'bg-white'}`}
+                                    >
+                                        {/* Hiển thị ID hóa đơn */}
+                                        <td className="p-4 text-center font-semibold text-gray-700">
+                                            #{invoice.id.toString().slice(-6)}
                                         </td>
-                                        <td className="border p-2 text-center">
-                                            {invoice.total.toLocaleString()} ₫
+                                        {/*  Định dạng ngày mua */}
+                                        <td className="p-4 text-center text-sm text-gray-600">
+                                            {new Date(invoice.created_at).toLocaleString('vi-VN')}
                                         </td>
-                                        <td className="border p-2 text-center">
-                                            {invoice.payment_method}
+                                        {/*  Định dạng tổng tiền */}
+                                        <td className="p-4 text-center font-bold text-red-600">
+                                            {formatCurrency(invoice.total)}
                                         </td>
-                                        <td className="border p-2 text-center">
-                                            <details className="cursor-pointer">
-                                                <summary className="text-blue-600 underline">
-                                                    Xem
+                                        {/* Hiển thị phương thức thanh toán */}
+                                        <td className="p-4 text-center text-sm font-medium text-gray-800">
+                                            {getPaymentMethodIcon(invoice.payment_method)}
+                                        </td>
+                                        {/*  Hiển thị chi tiết sản phẩm (details/summary) */}
+                                        <td className="p-4">
+                                            <details className="cursor-pointer bg-gray-200 p-2 rounded-lg text-sm transition open:bg-gray-100">
+                                                <summary className="font-semibold text-blue-600 hover:text-blue-700">
+                                                    Chi tiết ({invoice.items.length} SP)
                                                 </summary>
-                                                <div className="mt-2">
-                                                    {invoice.items.map((item) => (
-                                                        <div key={item.id} className="border p-2 mb-1">
-                                                            {item.product?.name} — SL: {item.quantity} — 
-                                                            Giá: {item.price.toLocaleString()} ₫
+                                                <div className="mt-2 pt-2 border-t border-gray-300 space-y-1">
+                                                    {invoice.items.map((item, itemIndex) => (
+                                                        <div key={itemIndex} className="flex justify-between text-gray-700">
+                                                            <span className="truncate flex-1 pr-2">
+                                                                {item.product?.name || 'Sản phẩm không rõ'}
+                                                            </span>
+                                                            <span className="whitespace-nowrap font-medium">
+                                                                x {item.quantity} ({formatCurrency(item.price * item.quantity)})
+                                                            </span>
                                                         </div>
                                                     ))}
                                                 </div>

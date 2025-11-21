@@ -290,7 +290,7 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                                 {filteredProducts.map(product => (
                                     <div 
                                         key={product.id} 
-                                        className="bg-gray-50 border border-gray-200 rounded-xl p-3 cursor-pointer hover:shadow-lg hover:border-blue-400 transition transform hover:-translate-y-0.5"
+                                        className="bg-gray-100 border border-gray-200 rounded-xl p-3 cursor-pointer hover:shadow-lg hover:border-blue-400 transition transform hover:-translate-y-0.5"
                                         onClick={() => addToCart(product)}
                                     >
                                         <div className="text-sm font-semibold text-gray-800 truncate">{product.name}</div>

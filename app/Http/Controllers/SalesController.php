@@ -69,6 +69,17 @@ class SalesController extends Controller
             'customer_id' => $validated['customer_id']?? null,
         ]);
 
+        //tu dong cong diem
+        if($validated['customer_id']){
+            $customer = Customer::find($validated['customer_id']);
+
+            //10.000d = 1diem
+            $earnedPoints = floor($total/10000);
+
+            $customer->points +=$earnedPoints;
+            $customer->updateRank();
+        }
+
         foreach ($validated['items'] as $item) {
             $product = Product::find($item['id']);
             $subtotal = $product->price * $item['quantity'];
