@@ -1,95 +1,169 @@
+import React, { useState } from "react";
+import { Head, Link, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
-import { useState } from "react";
 
-export default function InvoiceHistoy({ invoices, filters }) {
 
-    const [day, setDay] = useState(filters.day || "");
+
+// Hàm helper để định dạng tiền tệ
+const formatCurrency = (amount) => {
+    const num = Math.round(amount || 0);
+    return num.toLocaleString('vi-VN') + '₫';
+};
+
+// Hàm định dạng ngày giờ (sử dụng Date object)
+const formatDateTime = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleString('vi-VN');
+};
+
+export default function InvoiceHistory({ invoices, filters, auth, users }) {
+
+ 
+    const today = new Date().toISOString().split("T")[0];
+
+    const [day, setDay] = useState(filters.day || today);
+    const [userId, setUserId] = useState(filters.user_id || auth.user.id);
+    
 
     function applyFilter() {
-        router.get("/sales/invoices", { day });
+        router.get("/sales/invoices", { 
+            day,
+            user_id: userId
+        });
     }
 
     function clearFilter() {
-        setDay("");
+        setDay(today);
+        setUserId(auth.user.id);
         router.get("/sales/invoices");
     }
 
     return (
-        <div className="p-6">
-            <AuthenticatedLayout>
-                <h1 className="text-2xl font-bold mb-4">Lịch sử hóa đơn</h1>
+        <AuthenticatedLayout>
+            <Head title="Lịch sử hóa đơn" />
 
-                {/* Bộ lọc theo ngày */}
-                <div className="bg-white p-4 rounded shadow mb-5 flex items-center gap-3">
-                    <div>
-                        <label className="font-semibold">Theo ngày:</label>
+            <div className="min-h-screen bg-gray-50 p-6">
+                
+                {/* Header Section */}
+                <div className="flex justify-between items-center mb-6 p-4 bg-white rounded-xl shadow-md">
+                    <h1 className="text-3xl font-extrabold text-blue-800">
+                        📜 LỊCH SỬ HÓA ĐƠN BÁN HÀNG
+                    </h1>
+                    <div className='flex gap-3 text-sm'>
+                        <Link
+                            href={route('sales.dashboard')} 
+                            className="flex items-center bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition duration-150"
+                        >
+                            🛒 Quay lại Bán hàng
+                        </Link>
+                    </div>
+                </div>
+
+                {/* BỘ LỌC */}
+                <div className="mb-6 p-4 bg-white rounded-xl shadow-md flex items-center gap-4 border-l-4 border-blue-600">
+
+                    {/* Hiển thị tên nhân viên */}
+                    <div className="font-bold text-lg text-blue-700 flex-shrink-0">
+                        Nhân viên: <span className="text-gray-800">{auth.user.name}</span>
+                    </div>
+
+                    <span className="text-gray-400">|</span>
+                    
+                    {/* Lọc theo ngày */}
+                    <div className="flex items-center gap-2">
+                        <label className="font-semibold text-gray-700">Ngày:</label>
                         <input
                             type="date"
                             value={day}
                             onChange={(e) => setDay(e.target.value)}
-                            className="border p-2 rounded ml-2"
+                            className="border border-gray-300 rounded-lg shadow-sm px-3 py-2 focus:border-blue-500 focus:ring-blue-500 transition"
                         />
                     </div>
 
                     <button
                         onClick={applyFilter}
-                        className="bg-blue-600 text-white px-4 py-2 rounded"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
                     >
                         Lọc
                     </button>
 
                     <button
                         onClick={clearFilter}
-                        className="bg-gray-500 text-white px-4 py-2 rounded"
+                        className="bg-gray-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-600 transition"
                     >
                         Xóa lọc
                     </button>
                 </div>
 
-                {/* Danh sách hóa đơn */}
-                <div className="bg-white rounded shadow p-4">
-                    <table className="w-full border">
+                {/* DANH SÁCH HÓA ĐƠN (SỬA LẠI CỘT SẢN PHẨM) */}
+                <div className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200">
+                    <table className="w-full text-left">
                         <thead>
-                            <tr className="bg-gray-100 border">
-                                <th className="p-2 border">Mã HĐ</th>
-                                <th className="p-2 border">Ngày tạo</th>
-                                <th className="p-2 border">Sản phẩm</th>
-                                <th className="p-2 border">Tổng tiền</th>
+                            <tr className="bg-blue-600 text-white shadow-md">
+                                <th className="p-4 w-[10%] text-center">Mã HĐ</th>
+                                <th className="p-4 w-[15%] text-center">Ngày tạo</th>
+                                <th className="p-4 w-[15%] text-center">Nhân viên</th>
+                                <th className="p-4 w-[40%]">Chi tiết Sản phẩm</th> {/* Tên cột mới */}
+                                <th className="p-4 w-[20%] text-center">Tổng tiền</th>
                             </tr>
                         </thead>
+
                         <tbody>
                             {invoices.length === 0 && (
                                 <tr>
-                                    <td colSpan="4" className="text-center p-3 text-gray-500">
-                                        Không có hóa đơn nào
+                                    <td colSpan="5" className="text-center py-10 text-gray-500 text-lg">
+                                        Không có hóa đơn nào được tìm thấy.
                                     </td>
                                 </tr>
                             )}
 
-                            {invoices.map((invoice) => (
-                                <tr key={invoice.id} className="border">
-                                    <td className="p-2 border">{invoice.id}</td>
-                                    <td className="p-2 border">
-                                        {new Date(invoice.created_at).toLocaleString()}
+                            {invoices.map((invoice, index) => (
+                                <tr 
+                                    key={invoice.id} 
+                                    className={`hover:bg-blue-50 transition ${index % 2 !== 0 ? 'bg-gray-100' : 'bg-white'}`}
+                                >
+                                    <td className="p-4 text-center font-bold text-gray-700 text-sm">
+                                        #{invoice.id.toString().slice(-6)}
                                     </td>
-                                    <td className="p-2 border">
-                                        {invoice.items.map((i) => (
-                                            <div key={i.id}>
-                                                - {i.product.name} x {i.quantity}
+
+                                    <td className="p-4 text-center text-sm text-gray-600">
+                                        {formatDateTime(invoice.created_at)}
+                                    </td>
+
+                                    <td className="p-4 text-sm font-semibold text-gray-700">
+                                        {invoice.user?.name || "Không xác định"}
+                                    </td>
+
+                                    {/* CỘT SẢN PHẨM N */}
+                                    <td className="p-4 text-sm">
+                                        <details className="cursor-pointer bg-gray-200 p-2 rounded-lg text-xs transition open:bg-gray-100">
+                                            <summary className="font-semibold text-blue-600 hover:text-blue-700">
+                                                Xem chi tiết ({invoice.items.length} SP)
+                                            </summary>
+                                            <div className="mt-2 pt-2 border-t border-gray-300 space-y-1">
+                                                {invoice.items.map((i) => (
+                                                    <div key={i.id} className="flex justify-between text-gray-700">
+                                                        <span className="truncate pr-2">- {i.product?.name || 'Sản phẩm không rõ'}</span>
+                                                        <span className="font-medium text-gray-600 whitespace-nowrap">
+                                                            x {i.quantity} 
+                                                        </span>
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ))}
+                                        </details>
                                     </td>
-                                    <td className="p-2 border text-red-600 font-bold">
-                                        {invoice.total.toLocaleString()} đ
+                                    
+
+
+                                    <td className="p-4 text-center text-red-600 font-bold text-lg">
+                                        {formatCurrency(invoice.total)}
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-
-            </AuthenticatedLayout>
-        </div>
+            </div>
+        </AuthenticatedLayout>
     );
 }

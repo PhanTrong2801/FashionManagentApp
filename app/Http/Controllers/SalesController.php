@@ -109,7 +109,7 @@ class SalesController extends Controller
 
     public function invoices(Request $request)
 {
-    $query = Invoice::with('items.product', 'items')->orderBy('id', 'DESC');
+    $query = Invoice::with('items.product', 'items','user')->orderBy('id', 'DESC');
 
     // Lọc theo ngày
     if ($request->filled('day')) {
