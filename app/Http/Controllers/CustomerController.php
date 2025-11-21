@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -35,4 +36,39 @@ class CustomerController extends Controller
 
         return back()->with('success', 'Đã thêm khách hàng thành công!');
     }
+
+    public function update (Request $request,Customer $customer){
+        $request->validate([
+            'name' => 'required',
+            'phone' => 'required',
+            'address' => 'nullable'
+        ]);
+
+        $customer->update($request->all());
+        return back()->with('success','Cập nhật thành công' );
+    }
+
+    public function destroy (Customer $customer){
+        if ($customer->orders()->count() >0){
+            return back()->withErrors(['error' => 'Không thể xoá khách đã mua hàng!']);
+        }
+        $customer->delete();
+
+        return back()->with('success', 'Đã xoá khách hàng');
+    }
+
+    public function history($id){
+        $customer = Customer::findOrFail($id);
+
+        $invoices = Invoice::with('items.product')
+            ->where('customer_id', $id)
+            ->orderBy('id','DESC')
+            ->get();
+        
+            return Inertia::render('Sales/CustomerHistory', [
+                'customer' => $customer,
+                'invoices' => $invoices
+            ]);
+    }
+
 }

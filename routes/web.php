@@ -56,6 +56,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Khachhang
     Route::get('/sales/customers', [CustomerController::class, 'index'])->name('sales.customers');
     Route::post('/sales/customers', [CustomerController::class, 'store'])->name('sales.customers.store');
+    Route::put('/sales/customers/{customer}', [CustomerController::class, 'update'])->name('sales.customers.update');
+    Route::delete('/sales/customers/{customer}', [CustomerController::class, 'destroy'])->name('sales.customers.destroy');
+    Route::get('/sales/customers/{id}/history', [CustomerController::class, 'history'])->name('sales.customers.history');
 
 
      // Neu là admin -> trang chào mừng
