@@ -16,6 +16,20 @@ const formatDateTime = (dateString) => {
     return new Date(dateString).toLocaleString('vi-VN');
 };
 
+// Hàm trả về icon cho phương thức thanh toán (Thêm lại logic này)
+const getPaymentMethodIcon = (method) => {
+    switch (method?.toLowerCase()) {
+        case "cash":
+            return "💵 Tiền mặt";
+        case "card":
+            return "💳 Thẻ/POS";
+        case "bank":
+            return "🏦 Chuyển khoản";
+        default:
+            return method || "N/A";
+    }
+};
+
 export default function InvoiceHistory({ invoices, filters, auth, users }) {
 
  
@@ -26,6 +40,7 @@ export default function InvoiceHistory({ invoices, filters, auth, users }) {
     
 
     function applyFilter() {
+        // LOGIC GIỮ NGUYÊN
         router.get("/sales/invoices", { 
             day,
             user_id: userId
@@ -33,6 +48,7 @@ export default function InvoiceHistory({ invoices, filters, auth, users }) {
     }
 
     function clearFilter() {
+        // LOGIC GIỮ NGUYÊN
         setDay(today);
         setUserId(auth.user.id);
         router.get("/sales/invoices");
@@ -95,23 +111,25 @@ export default function InvoiceHistory({ invoices, filters, auth, users }) {
                     </button>
                 </div>
 
-                {/* DANH SÁCH HÓA ĐƠN (SỬA LẠI CỘT SẢN PHẨM) */}
+                {/* DANH SÁCH HÓA ĐƠN */}
                 <div className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200">
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-blue-600 text-white shadow-md">
-                                <th className="p-4 w-[10%] text-center">Mã HĐ</th>
-                                <th className="p-4 w-[15%] text-center">Ngày tạo</th>
-                                <th className="p-4 w-[15%] text-center">Nhân viên</th>
-                                <th className="p-4 w-[40%]">Chi tiết Sản phẩm</th> {/* Tên cột mới */}
-                                <th className="p-4 w-[20%] text-center">Tổng tiền</th>
+                                {/* ĐIỀU CHỈNH ĐỘ RỘNG CỘT */}
+                                <th className="p-4 w-[8%] text-center">Mã HĐ</th>
+                                <th className="p-4 w-[12%] text-center">Ngày tạo</th>
+                                <th className="p-4 w-[12%] text-center">Nhân viên</th>
+                                <th className="p-4 w-[15%] text-center">Phương thức TT</th> 
+                                <th className="p-4 w-[38%]">Chi tiết Sản phẩm</th> 
+                                <th className="p-4 w-[15%] text-center">Tổng tiền</th>
                             </tr>
                         </thead>
 
                         <tbody>
                             {invoices.length === 0 && (
                                 <tr>
-                                    <td colSpan="5" className="text-center py-10 text-gray-500 text-lg">
+                                    <td colSpan="6" className="text-center py-10 text-gray-500 text-lg">
                                         Không có hóa đơn nào được tìm thấy.
                                     </td>
                                 </tr>
@@ -134,7 +152,12 @@ export default function InvoiceHistory({ invoices, filters, auth, users }) {
                                         {invoice.user?.name || "Không xác định"}
                                     </td>
 
-                                    {/* CỘT SẢN PHẨM N */}
+                                    
+                                    <td className="p-4 text-center text-sm font-medium">
+                                        {getPaymentMethodIcon(invoice.payment_method)}
+                                    </td>
+                                    
+                                    {/* CỘT CHI TIẾT SẢN PHẨM */}
                                     <td className="p-4 text-sm">
                                         <details className="cursor-pointer bg-gray-200 p-2 rounded-lg text-xs transition open:bg-gray-100">
                                             <summary className="font-semibold text-blue-600 hover:text-blue-700">

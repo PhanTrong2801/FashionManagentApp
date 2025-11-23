@@ -236,6 +236,12 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                         <Link href={route('sales.invoices')} className="flex items-center bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition duration-150">
                             📜 Lịch sử HĐ
                         </Link>
+                        <Link
+                            href="/sales/shifts"
+                            className="flex items-center bg-purple-600  text-white px-4 py-2 rounded-lg hover:bg-purple-700transition duration-150"
+                        >
+                            Ca làm
+                        </Link>
                     </div>
                 </div>
 
@@ -414,7 +420,7 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                                 onChange={(e) => setData('payment_method', e.target.value)}
                             >
                                 <option value="cash">💵 Tiền mặt</option>
-                                <option value="card">💳 Thẻ</option>
+                                <option value="bank">💳 Thẻ</option>
                                 <option value="bank">🏦 Chuyển khoản</option>
                             </select>
 

@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SalesController;
+use App\Http\Controllers\ShiftController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -72,6 +73,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/admin/create-user', [UserManagementController::class, 'create'])->name('admin.createUser');
     Route::post('/admin/create-user', [UserManagementController::class, 'store'])->name('admin.storeUser');
+});
+
+Route::prefix('sales')->middleware(['auth', 'role:user'])->group(function () {
+    Route::get('/shifts', [ShiftController::class, 'index']);
+    Route::post('/shifts/start', [ShiftController::class, 'start']);
+    Route::post('/shifts/close', [ShiftController::class, 'close']);
 });
 
 
