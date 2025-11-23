@@ -4,7 +4,7 @@ use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\ProductController as ControllersProductController;
+use App\Http\Controllers\ProductController ;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -20,7 +20,7 @@ Route::get('/', function (){
     
     $user = Auth::user();
     if($user->role ==='admin'){
-        return redirect()->route('admin.welcome');
+        return redirect()->route('admin.dashboard');
     }
     return redirect()->route('sales.dashboard');
 });
@@ -30,7 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::get('/sales/inventory', [ControllersProductController::class, 'inventory'])->name('sales.inventory');
+    Route::get('/sales/inventory', [ProductController::class, 'inventory'])->name('sales.inventory');
 
 });
 
@@ -62,17 +62,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/sales/customers/{id}/history', [CustomerController::class, 'history'])->name('sales.customers.history');
 
 
-     // Neu là admin -> trang chào mừng
-    Route::get('/admin/welcome',[AdminController::class, 'welcome'])
-        ->middleware('role:admin')
-        ->name('admin.welcome');
+ 
     // Trang quản lý admin
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])
         ->middleware('role:admin')
         ->name('admin.dashboard');
 
-    Route::get('/admin/create-user', [UserManagementController::class, 'create'])->name('admin.createUser');
-    Route::post('/admin/create-user', [UserManagementController::class, 'store'])->name('admin.storeUser');
+
 });
 
 Route::prefix('sales')->middleware(['auth', 'role:user'])->group(function () {
@@ -86,4 +82,15 @@ Route::prefix('sales')->middleware(['auth', 'role:user'])->group(function () {
 Route::middleware(['auth', 'role:admin'])->group(function (){
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('/register', [RegisteredUserController::class, 'store']);
+
+
+    Route::get('/products', [ ProductController::class, 'adminIndex'])->name('admin.products');
+    Route::post('/products', [ProductController::class, 'store'])->name('admin.products.store');
+    Route::put('/products/{product}', [ProductController::class, 'update'])->name('admin.products.update');
+    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
+
+    // Danh mục
+    Route::post('/categories', [ProductController::class, 'storeCategory'])->name('admin.categories.store');
+    Route::put('/categories/{category}', [ProductController::class, 'updateCategory'])->name('admin.categories.update');
+    Route::delete('/categories/{category}', [ProductController::class, 'destroyCategory'])->name('admin.categories.destroy');
 });
