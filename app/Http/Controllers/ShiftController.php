@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Invoice;
+use App\Models\Order;
 use App\Models\Shift;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,9 +19,12 @@ class ShiftController extends Controller
             ->whereNull('end_time')
             ->first();
 
-        $liveRevenue = Invoice::where('user_id', $user->id)
-                                ->whereBetween('created_at', [$currentShift?->start_time ?? now(), now()])
-                                ->sum('total');
+        $liveRevenue = 0;
+            if ($currentShift) {
+                $liveRevenue = Order::where('user_id', $user->id)
+                    ->whereBetween('created_at', [$currentShift->start_time, now()])
+                    ->sum('total_amount'); 
+            }
 
         return Inertia::render('Sales/Shifts', [
             'activeShift' => $currentShift,
@@ -38,6 +41,11 @@ class ShiftController extends Controller
         $request->validate([
             'opening_cash' => 'required|integer|min:0'
         ]);
+        // Kiểm tra xem nhân viên có đang quên đóng ca cũ không
+        $existingShift = Shift::where('user_id', Auth::id())->whereNull('end_time')->first();
+        if ($existingShift) {
+            return back()->withErrors(['msg' => 'Bạn vẫn còn một ca chưa đóng!']);
+        }
 
         Shift::create([
             'user_id' => Auth::id(),
@@ -58,13 +66,13 @@ class ShiftController extends Controller
             ->whereNull('end_time')
             ->firstOrFail();
 
-        $invoices = Invoice::where('user_id', Auth::id())
+        $order = Order::where('user_id', Auth::id())
             ->whereBetween('created_at', [$shift->start_time, now()])
             ->get();
 
-        $totalRevenue = $invoices->sum('total');
-        $totalCash = $invoices->where('payment_method', 'cash')->sum('total');
-        $totalBank = $invoices->where('payment_method', 'bank')->sum('total');
+        $totalRevenue = $order->sum('total_amount');
+        $totalCash = $order->where('payment_method', 'cash')->sum('total_amount');
+        $totalBank = $order->where('payment_method', 'bank')->sum('total_amount');
 
         $difference = ($shift->opening_cash + $totalCash +$totalBank) - $request->closing_cash;
 

@@ -13,7 +13,7 @@ class Customer extends Model
     ];
 
     public function invoices(){
-        return $this->hasMany(Invoice::class);
+        return $this->hasMany(Order::class);
     }
 
     public function updateRank(){

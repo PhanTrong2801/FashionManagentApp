@@ -89,7 +89,7 @@ export default function CustomerHistory({ customer, invoices }) {
                                     >
                                         {/* Hiển thị ID hóa đơn */}
                                         <td className="p-4 text-center font-semibold text-gray-700">
-                                            #{invoice.id.toString().slice(-6)}
+                                            {invoice.invoice_code.toString()}
                                         </td>
                                         {/*  Định dạng ngày mua */}
                                         <td className="p-4 text-center text-sm text-gray-600">
@@ -97,7 +97,7 @@ export default function CustomerHistory({ customer, invoices }) {
                                         </td>
                                         {/*  Định dạng tổng tiền */}
                                         <td className="p-4 text-center font-bold text-red-600">
-                                            {formatCurrency(invoice.total)}
+                                            {formatCurrency(invoice.total_amount)}
                                         </td>
                                         {/* Hiển thị phương thức thanh toán */}
                                         <td className="p-4 text-center text-sm font-medium text-gray-800">

@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('invoice_code')->unique();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->decimal('total_amount', 12, 2);
             $table->string('payment_method'); 
+            $table->integer('customer_money')->nullable();
+            $table->integer('change_money')->nullable();
             $table->string('status')->default('unpaid'); 
             $table->timestamps();
         });

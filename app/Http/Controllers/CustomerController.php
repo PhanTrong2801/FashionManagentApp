@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Models\Invoice;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -60,7 +60,7 @@ class CustomerController extends Controller
     public function history($id){
         $customer = Customer::findOrFail($id);
 
-        $invoices = Invoice::with('items.product')
+        $invoices = Order::with('items.product')
             ->where('customer_id', $id)
             ->orderBy('id','DESC')
             ->get();
