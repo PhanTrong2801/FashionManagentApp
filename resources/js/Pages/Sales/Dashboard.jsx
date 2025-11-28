@@ -43,6 +43,10 @@ export default function SalesDashboard({ products: initialProducts, categories: 
     const [activeCart, setActiveCart] = useState(1);
     // Đảm bảo currentCart luôn có giá trị (hoặc fallback)
     const currentCart = carts.find(c => c.id === activeCart) || { id: activeCart, items: [] };
+
+    //state tim kiem san pham
+    const [productSearch, setProductSearch] = useState('');
+    const [showSearchDropdown, setShowSearchDropdown] = useState(false);
     
     // State cho Modal/Thông báo 
     const [showCustomerModal, setShowCustomerModal] = useState(false);
@@ -52,6 +56,7 @@ export default function SalesDashboard({ products: initialProducts, categories: 
     const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] = useState(false);
     const [cartToDeleteId, setCartToDeleteId] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(null);
 
 
     // State khác 
@@ -68,6 +73,17 @@ export default function SalesDashboard({ products: initialProducts, categories: 
         payment_method: 'cash',
     });
 
+    const searchResults = productSearch.trim() === ''
+        ?[]
+        :products.filter(p => 
+            p.name.toLowerCase().includes(productSearch.toLowerCase() ||
+            (p.code && p.code.toLowerCase().includes(productSearch.toLowerCase())))
+        );
+    const handleSelectProductSearch = (product) =>{
+        addToCart(product);
+        setProductSearch('');
+        setShowSearchDropdown(false);
+    }
     // --- Cart Management Logic ---
     const switchCart = (id) => setActiveCart(id);
     const addNewCart = () => {
@@ -119,6 +135,14 @@ export default function SalesDashboard({ products: initialProducts, categories: 
 
     const addToCart = (product) => {
         const existing = currentCart.items.find((p) => p.id === product.id);
+        const currentQty = existing ? existing.quantity : 0;
+        const nextQty = currentQty +1;
+
+        if(nextQty >product.stock){
+            setErrorMessage(`⚠️ Sản phẩm "${product.name}" chỉ còn ${product.stock} cái trong kho!`);
+            setTimeout(() =>setErrorMessage(null),3000);
+            return;
+        }
         let updated;
 
         if (existing) {
@@ -126,7 +150,7 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                 p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
             );
         } else {
-            // Đảm bảo sản phẩm có price
+
             updated = [...currentCart.items, { ...product, quantity: 1, price: product.price }]; 
         }
 
@@ -134,17 +158,25 @@ export default function SalesDashboard({ products: initialProducts, categories: 
     };
 
     const updateQty = (id, qty) => {
-        const newQty = parseInt(qty);
-        // Xóa sản phẩm nếu số lượng < 1
+        const itemInCart = currentCart.items.find(p => p.id === id);
+        if(!itemInCart) return;
+
+        let newQty = parseInt(qty);
         if (newQty < 1 || isNaN(newQty)) {
             updateCartItems(currentCart.items.filter(p => p.id !== id));
-        } else {
-            updateCartItems(
-                currentCart.items.map(p =>
-                    p.id === id ? { ...p, quantity: newQty } : p
-                )
-            );
+            return;
+        } 
+
+        if(newQty > itemInCart.stock){
+            setErrorMessage(`⚠️ Quá số lượng tồn kho! (Tối đa: ${itemInCart.stock})`);
+            setTimeout(() => setErrorMessage(null), 3000);
+            newQty = itemInCart.stock;
         }
+        updateCartItems(
+            currentCart.items.map(p =>
+                p.id === id ? {...p, quantity:newQty} :p
+            )
+        );
     };
     
     const removeItem = (id) => {
@@ -254,12 +286,53 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                             <h2 className="text-xl font-semibold mb-3 text-gray-800">Sản phẩm & Danh mục</h2>
                             
                             {/* Thanh tìm kiếm và Filter */}
-                            <div className="flex gap-3 mb-4">
-                                <input 
-                                    type="text" 
-                                    placeholder="Tìm kiếm sản phẩm..."
-                                    className="flex-1 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                />
+                            <div className="flex gap-3 mb-4 relative z-20">
+                                <div className="flex-1 relative">
+                                    <input 
+                                        type="text"
+                                        placeholder='Gõ tên hoặc mã sản phẩm...' 
+                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 pl-10"
+                                        value={productSearch}
+                                        onChange={(e) =>{
+                                            setProductSearch(e.target.value);
+                                            setShowSearchDropdown(true);
+                                        }}
+                                        onFocus={()=> setShowSearchDropdown(true)}
+                                        />
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                {showSearchDropdown && productSearch.trim() !== '' && (
+                                        <div className="absolute top-full mt-1 left-0 w-full bg-white border border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto z-50">
+                                            {searchResults.length > 0 ? (
+                                                searchResults.map(p => (
+                                                    <div 
+                                                        key={p.id}
+                                                        onClick={() => handleSelectProductSearch(p)}
+                                                        className="p-3 border-b border-gray-100 hover:bg-blue-50 cursor-pointer flex justify-between items-center transition"
+                                                    >
+                                                        <div>
+                                                            <div className="font-semibold text-gray-800">{p.name}</div>
+                                                            <div className="text-xs text-gray-500">Mã: {p.code || '---'} | Kho: {p.stock}</div>
+                                                        </div>
+                                                        <div className="font-bold text-blue-600">
+                                                            {formatCurrency(p.price)}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="p-4 text-center text-gray-500">
+                                                    Không tìm thấy sản phẩm nào.
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                
+
                                 <button
                                     onClick={() => setShowCategory(!showCategory)}
                                     className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition duration-150 flex-none"
@@ -626,6 +699,12 @@ export default function SalesDashboard({ products: initialProducts, categories: 
             {successMessage && (
                 <div className="fixed bottom-5 right-5 bg-green-600 text-white p-4 rounded-lg shadow-xl z-50 transition-opacity duration-300">
                     {successMessage}
+                </div>
+            )}
+
+            {errorMessage && (
+                <div className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-full shadow-2xl z-50 font-bold animate-pulse border-2 border-white">
+                    {errorMessage}
                 </div>
             )}
 

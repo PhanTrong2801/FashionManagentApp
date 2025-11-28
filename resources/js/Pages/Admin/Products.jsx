@@ -200,9 +200,6 @@ export default function Products() {
     );
 }
 
-// ==================================================
-//     COMPONENT QUẢN LÝ DANH MỤC
-// ==================================================
 function CategoryManager({ categories, searchCategory, setSearchCategory }) {
     const [name, setName] = useState("");
 
