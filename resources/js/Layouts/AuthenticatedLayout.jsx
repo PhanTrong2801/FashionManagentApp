@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
+import TimeClock from '@/Components/TimeClock';
 
 export default function AuthenticatedLayout({ children }) {
   const { auth } = usePage().props;
@@ -23,12 +24,17 @@ export default function AuthenticatedLayout({ children }) {
       {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+          
           <Link 
             href={dashboardRoute} 
             className="text-lg font-semibold text-gray-800 hover:text-gray-900 transition duration-150 ease-in-out"
           >
             {displayText}
           </Link>
+           <div className="flex items-center gap-4">
+                    <TimeClock/>
+                   
+            </div>
 
           {/* User Dropdown */}
           <div className="relative">
@@ -64,7 +70,9 @@ export default function AuthenticatedLayout({ children }) {
                 </button>
               </div>
             )}
+            
           </div>
+         
         </div>
       </header>
 

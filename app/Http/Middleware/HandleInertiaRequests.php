@@ -33,6 +33,9 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'is_working' => $request->user() 
+                ? $request->user()->work_sessions()->whereNull('check_out')->exists() 
+                : false,
             ],
         ];
     }

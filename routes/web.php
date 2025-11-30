@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController ;
@@ -68,6 +69,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:admin')
         ->name('admin.dashboard');
 
+    Route::post('/attendance/toggle', [AttendanceController::class, 'toggle'])->name('attendance.toggle');
+
 
 });
 
@@ -103,5 +106,8 @@ Route::middleware(['auth', 'role:admin'])
     // 2. Quản lý Khách hàng
     Route::get('/admin/customers', [\App\Http\Controllers\Admin\AdminCustomerController::class, 'index'])
         ->name('admin.customers.index');
+
+    Route::get('/admin/payroll', [\App\Http\Controllers\Admin\PayrollController::class, 'index'])
+    ->name('admin.payroll.index');
 
 });

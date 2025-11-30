@@ -61,6 +61,12 @@ export default function AdminLayout({ children }) {
                     <Link href={route('admin.users.index')} className="flex items-center p-3 hover:bg-gray-100">
                         👥 <span className={`ml-3 ${!open && "hidden"}`}>Nhân viên</span>
                     </Link>
+                    <Link 
+                        href={route('admin.payroll.index')} 
+                        className={`flex items-center p-3 hover:bg-gray-100 transition-colors ${route().current('admin.payroll.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : 'text-gray-700'}`}
+                    >
+                        💸 <span className={`ml-3 ${!open && "hidden"}`}>Bảng lương</span>
+                    </Link>
                 </nav>
             </div>
 
