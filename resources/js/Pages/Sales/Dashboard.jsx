@@ -221,7 +221,9 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                 const remainingCarts = carts.filter(c => c.id !== activeCart);
                 
                 if (remainingCarts.length === 0) {
-                    addNewCart(); 
+                    const newId = Date.now();
+                    setCarts([{ id: newId, items: [] }]);
+                    setActiveCart(newId);
                 } else {
                     setCarts(remainingCarts);
                     setActiveCart(remainingCarts[0].id);
@@ -231,6 +233,8 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                 setSuccessMessage(`Đơn hàng ${activeCart.toString().slice(-4)} đã thanh toán thành công!`); 
                 setShowPayModal(false);
                 setSelectedCustomer(null);
+                setCustomerMoney('');
+                setChangeMoney(0);
                 
                 // Tự động ẩn thông báo sau 3 giây
                 setTimeout(() => setSuccessMessage(null), 3000);

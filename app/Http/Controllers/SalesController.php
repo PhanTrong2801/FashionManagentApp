@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Shift;
 use Dotenv\Util\Str as UtilStr;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -57,8 +58,14 @@ class SalesController extends Controller
             }
 
             $invoiceCode = 'INV-'. date('Ymd') . '-' . strtoupper(SupportStr::random(4));
+            $currentShift = Shift::whereNull('end_time')->latest()->first();
+
+            if(!$currentShift){
+                return back()->with(['msg' => 'Chưa có ca làm việc nào được mở! Vui lòng mở ca trước.']);
+            }
 
             $order = Order::create([
+                'shift_id' =>$currentShift->id,
                 'invoice_code' => $invoiceCode,
                 'user_id' => Auth::id(),
                 'customer_id'=>$validated['customer_id']??null,

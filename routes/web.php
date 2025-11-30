@@ -79,7 +79,8 @@ Route::prefix('sales')->middleware(['auth', 'role:user'])->group(function () {
 
 
 
-Route::middleware(['auth', 'role:admin'])->group(function (){
+Route::middleware(['auth', 'role:admin'])
+    ->group(function (){
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('/register', [RegisteredUserController::class, 'store']);
 
@@ -93,4 +94,14 @@ Route::middleware(['auth', 'role:admin'])->group(function (){
     Route::post('/categories', [ProductController::class, 'storeCategory'])->name('admin.categories.store');
     Route::put('/categories/{category}', [ProductController::class, 'updateCategory'])->name('admin.categories.update');
     Route::delete('/categories/{category}', [ProductController::class, 'destroyCategory'])->name('admin.categories.destroy');
+
+    Route::resource('admin/users', UserManagementController::class)->names('admin.users');
+    Route::get('/admin/shifts', [\App\Http\Controllers\Admin\ShiftManagementController::class, 'index'])->name('admin.shifts.index');
+    Route::get('/admin/orders', [\App\Http\Controllers\Admin\OrderManagementController::class, 'index'])
+        ->name('admin.orders.index');
+
+    // 2. Quản lý Khách hàng
+    Route::get('/admin/customers', [\App\Http\Controllers\Admin\AdminCustomerController::class, 'index'])
+        ->name('admin.customers.index');
+
 });

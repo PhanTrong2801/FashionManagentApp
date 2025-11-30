@@ -15,24 +15,31 @@ class ShiftController extends Controller
         $user = Auth::user();
 
         $currentShift = Shift::with('user')
-            ->where('user_id', $user->id)
             ->whereNull('end_time')
             ->first();
 
+        $bankOrders = [];
         $liveRevenue = 0;
-            if ($currentShift) {
-                $liveRevenue = Order::where('user_id', $user->id)
-                    ->whereBetween('created_at', [$currentShift->start_time, now()])
-                    ->sum('total_amount'); 
-            }
+        if ($currentShift) {
+            $orders = Order::where('shift_id', $currentShift->id)->get();
+        
+        $liveRevenue = $orders->sum('total_amount');
+        
+        //  Lọc ra các đơn chuyển khoản để hiển thị chi tiết
+        $bankOrders = Order::where('shift_id', $currentShift->id)
+            ->where('payment_method', 'bank') 
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        }
 
         return Inertia::render('Sales/Shifts', [
             'activeShift' => $currentShift,
             'shifts' => Shift::with('user')
-                ->where('user_id', $user->id)
                 ->orderBy('id', 'DESC')
-                ->get(),
+                ->paginate(10),
             'liveRevenue' =>$liveRevenue,
+            'bankOrders' => $bankOrders,
         ]);
     }
 
@@ -42,9 +49,9 @@ class ShiftController extends Controller
             'opening_cash' => 'required|integer|min:0'
         ]);
         // Kiểm tra xem nhân viên có đang quên đóng ca cũ không
-        $existingShift = Shift::where('user_id', Auth::id())->whereNull('end_time')->first();
+        $existingShift = Shift::whereNull('end_time')->first();
         if ($existingShift) {
-            return back()->withErrors(['msg' => 'Bạn vẫn còn một ca chưa đóng!']);
+            return back()->withErrors(['msg' => 'Cửa hàng đang có một ca chưa đóng. Vui lòng đóng ca trước!']);
         }
 
         Shift::create([
@@ -62,19 +69,19 @@ class ShiftController extends Controller
             'closing_cash' => 'required|integer|min:0'
         ]);
 
-        $shift = Shift::where('user_id', Auth::id())
-            ->whereNull('end_time')
+        $shift = Shift::whereNull('end_time')
             ->firstOrFail();
 
-        $order = Order::where('user_id', Auth::id())
-            ->whereBetween('created_at', [$shift->start_time, now()])
+        $orders = Order::where('shift_id', $shift->id)
+            ->where('status', 'completed')
             ->get();
 
-        $totalRevenue = $order->sum('total_amount');
-        $totalCash = $order->where('payment_method', 'cash')->sum('total_amount');
-        $totalBank = $order->where('payment_method', 'bank')->sum('total_amount');
+        $totalRevenue = $orders->sum('total_amount');
+        $totalCash = $orders->where('payment_method', 'cash')->sum('total_amount');
+        $totalBank = $orders->where('payment_method', 'bank')->sum('total_amount');
 
-        $difference = ($shift->opening_cash + $totalCash +$totalBank) - $request->closing_cash;
+        $expectedCashInDrawer = $shift->opening_cash + $totalCash;
+        $difference = $request->closing_cash - $expectedCashInDrawer;
 
         $shift->update([
             'end_time' => now(),

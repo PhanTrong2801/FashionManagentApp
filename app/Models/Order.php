@@ -10,7 +10,8 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'invoice_code',  
+        'invoice_code', 
+
         'user_id',
         'customer_id', 
         'total_amount', 
@@ -18,6 +19,7 @@ class Order extends Model
         'customer_money', 
         'change_money',   
         'status',
+        'shift_id', 
     ];
 
     public function items()
@@ -33,5 +35,8 @@ class Order extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+    public function shift(){
+        return $this->belongsTo(Shift::class);
     }
 }

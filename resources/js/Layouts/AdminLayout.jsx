@@ -43,12 +43,22 @@ export default function AdminLayout({ children }) {
                     <Link href={route('admin.products')} className="flex items-center p-3 hover:bg-gray-100">
                         🛍 <span className={`ml-3 ${!open && "hidden"}`}>Sản phẩm</span>
                     </Link>
-
-                    <Link href="/admin/orders" className="flex items-center p-3 hover:bg-gray-100">
+                    <Link 
+                        href={route('admin.orders.index')} 
+                        className={`flex items-center p-3 hover:bg-gray-100 transition-colors ${route().current('admin.orders.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : 'text-gray-700'}`}
+                    >
                         🧾 <span className={`ml-3 ${!open && "hidden"}`}>Hóa đơn</span>
                     </Link>
 
-                    <Link href="/admin/users" className="flex items-center p-3 hover:bg-gray-100">
+                    {/* 5. Khách hàng (MỚI) */}
+                    <Link 
+                        href={route('admin.customers.index')} 
+                        className={`flex items-center p-3 hover:bg-gray-100 transition-colors ${route().current('admin.customers.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : 'text-gray-700'}`}
+                    >
+                        💎 <span className={`ml-3 ${!open && "hidden"}`}>Khách hàng</span>
+                    </Link>
+
+                    <Link href={route('admin.users.index')} className="flex items-center p-3 hover:bg-gray-100">
                         👥 <span className={`ml-3 ${!open && "hidden"}`}>Nhân viên</span>
                     </Link>
                 </nav>
