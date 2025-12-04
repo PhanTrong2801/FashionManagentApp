@@ -100,15 +100,14 @@ Route::middleware(['auth', 'role:admin'])
 
     Route::resource('admin/users', UserManagementController::class)->names('admin.users');
     Route::get('/admin/shifts', [\App\Http\Controllers\Admin\ShiftManagementController::class, 'index'])->name('admin.shifts.index');
-    Route::get('/admin/orders', [\App\Http\Controllers\Admin\OrderManagementController::class, 'index'])
-        ->name('admin.orders.index');
+    Route::get('/admin/orders', [\App\Http\Controllers\Admin\OrderManagementController::class, 'index'])->name('admin.orders.index');
 
     // 2. Quản lý Khách hàng
-    Route::get('/admin/customers', [\App\Http\Controllers\Admin\AdminCustomerController::class, 'index'])
-        ->name('admin.customers.index');
+    Route::get('/admin/customers', [\App\Http\Controllers\Admin\AdminCustomerController::class, 'index'])->name('admin.customers.index');
 
-    Route::get('/admin/payroll', [\App\Http\Controllers\Admin\PayrollController::class, 'index'])
-    ->name('admin.payroll.index');
+    Route::get('/admin/payroll', [\App\Http\Controllers\Admin\PayrollController::class, 'index'])->name('admin.payroll.index');
+    Route::post('/payroll/{id}/rate', [\App\Http\Controllers\Admin\PayrollController::class, 'updateRate'])->name('admin.payroll.update_rate');
+    Route::get('/payroll/export', [\App\Http\Controllers\Admin\PayrollController::class, 'export'])->name('admin.payroll.export');
 
     //Bao cao xuat file
     Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('admin.reports.index');

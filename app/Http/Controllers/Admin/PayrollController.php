@@ -2,18 +2,22 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\PayrollExport;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
+
+use function Symfony\Component\Clock\now;
 
 class PayrollController extends Controller
 {
     public function index(Request $request)
     {
         // Mặc định lấy tháng hiện tại
-        $month = $request->input('month', now()->month);
-        $year = $request->input('year', now()->year);
+        $month = $request->input('month', date('n'));
+        $year = $request->input('year', date('y'));
 
         // Thống kê theo nhân viên
         $payroll = User::where('role', 'user') // Chỉ lấy nhân viên
@@ -41,5 +45,21 @@ class PayrollController extends Controller
             'payroll' => $payroll,
             'filters' => ['month' => $month, 'year' => $year]
         ]);
+    }
+
+    public function updateRate(Request $request, $id){
+        $request->validate([
+            'hourly_rate' => 'required|numeric|min:0'
+        ]);
+        $user = User::findOrFail($id);
+        $user->update(['hourly_rate' =>$request->hourly_rate]);
+        return back()->with('success', "Đã cập nhật lương cho {$user->name}");
+    }
+
+    public function export(Request $request){
+        $month = $request->input('month', date('n'));
+        $year = $request->input('year', date('y'));
+
+        return Excel::download(new PayrollExport($month,$year), "bang-luong-thang-$month-$year.xlsx");
     }
 }
