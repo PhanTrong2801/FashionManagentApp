@@ -109,16 +109,26 @@ export default function ShiftIndex({ shifts }) {
                 {shifts.links && shifts.links.length > 3 && (
                     <div className="p-4 border-t flex justify-center gap-1">
                         {shifts.links.map((link, i) => (
-                            <Link
-                                key={i}
-                                href={link.url}
-                                className={`px-3 py-1 border rounded text-sm ${
-                                    link.active 
-                                        ? 'bg-blue-600 text-white border-blue-600' 
-                                        : 'bg-white text-gray-600 hover:bg-gray-100'
-                                } ${!link.url ? 'opacity-50 pointer-events-none' : ''}`}
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                            />
+                            link.url ? (
+                                // Nếu có URL -> Render thẻ Link
+                                <Link
+                                    key={i}
+                                    href={link.url}
+                                    className={`px-3 py-1 border rounded text-sm ${
+                                        link.active 
+                                            ? 'bg-blue-600 text-white border-blue-600' 
+                                            : 'bg-white text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                />
+                            ) : (
+                                // Nếu URL là null -> Render thẻ span (không bấm được)
+                                <span
+                                    key={i}
+                                    className="px-3 py-1 border rounded text-sm text-gray-400 bg-gray-50 cursor-not-allowed"
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                />
+                            )
                         ))}
                     </div>
                 )}

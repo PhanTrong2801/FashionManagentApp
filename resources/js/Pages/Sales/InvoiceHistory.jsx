@@ -193,16 +193,26 @@ export default function InvoiceHistory({ invoices, filters, auth }) {
                     {invoices.links && invoices.links.length > 3 && (
                         <div className="p-4 border-t flex justify-center gap-1 bg-gray-50">
                             {invoices.links.map((link, key) => (
-                                <Link
-                                    key={key}
-                                    href={link.url}
-                                    className={`px-3 py-1 text-sm border rounded ${
-                                        link.active 
-                                            ? 'bg-blue-600 text-white border-blue-600' 
-                                            : 'bg-white text-gray-600 hover:bg-gray-100'
-                                    } ${!link.url ? 'opacity-50 pointer-events-none' : ''}`}
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                />
+                                link.url ? (
+                                    // Trường hợp có URL: Hiển thị thẻ Link
+                                    <Link
+                                        key={key}
+                                        href={link.url}
+                                        className={`px-3 py-1 text-sm border rounded ${
+                                            link.active 
+                                                ? 'bg-blue-600 text-white border-blue-600' 
+                                                : 'bg-white text-gray-600 hover:bg-gray-100'
+                                        }`}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                ) : (
+                                    // Trường hợp URL là null (Trang trước/Trang sau bị disable): Hiển thị thẻ span
+                                    <span
+                                        key={key}
+                                        className="px-3 py-1 text-sm border rounded text-gray-400 bg-gray-100 cursor-not-allowed"
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                )
                             ))}
                         </div>
                     )}

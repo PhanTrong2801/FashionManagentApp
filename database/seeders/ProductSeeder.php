@@ -3,42 +3,76 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\Customer;
 use App\Models\Product;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Supplier;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-         $shirts = Category::where('name', 'Áo sơ mi')->first();
-        $pants = Category::where('name', 'Quần jean')->first();
-        $dresses = Category::where('name', 'Váy')->first();
-        $shoes = Category::where('name', 'Giày dép')->first();
-        $accessories = Category::where('name', 'Phụ kiện')->first();
+        // 1. Tạo Danh mục
+        $cats = ['Áo Thun', 'Áo Sơ Mi', 'Quần Jean', 'Váy Đầm', 'Phụ Kiện'];
+        $catIds = [];
+        foreach ($cats as $c) {
+            $catIds[] = Category::create(['name' => $c])->id;
+        }
 
-        // 1. Áo sơ mi
-        Product::create(['code' =>'SMT','name' => 'Áo sơ mi trắng classic', 'category_id' => $shirts->id, 'price' => 250000, 'stock' => 20, 'size' => 'M', 'color' => 'Trắng']);
-        Product::create(['code' =>'SMB','name' => 'Áo sơ mi caro xanh', 'category_id' => $shirts->id, 'price' => 280000, 'stock' => 15, 'size' => 'L', 'color' => 'Xanh']);
+        // 2. Tạo Nhà Cung Cấp
+        $suppliers = ['Xưởng May Hạnh Phúc', 'Fashion Global', 'Local Brand X'];
+        $supIds = [];
+        foreach ($suppliers as $s) {
+            $supIds[] = Supplier::create([
+                'name' => $s,
+                'contact_name' => 'Anh Quản Lý',
+                'phone' => '0909123456',
+                'address' => 'Hồ Chí Minh'
+            ])->id;
+        }
+
+        // 3. Tạo Khách Hàng
+        Customer::create(['name' => 'Khách Vãng Lai', 'phone' => '0000000000', 'points' => 0]); // Khách lẻ
+        for ($i = 1; $i <= 10; $i++) {
+            Customer::create([
+                'name' => "Khách VIP $i",
+                'phone' => "098765432$i",
+                'address' => "Sài Gòn",
+                'points' => rand(100, 5000),
+                'rank' => rand(0, 1) ? 'Gold' : 'Member'
+            ]);
+        }
+
+        // 4. Tạo Sản Phẩm (20 món)
+        $products = [
+            ['name' => 'Áo Thun Basic Trắng', 'price' => 150000],
+            ['name' => 'Áo Thun In Hình Mèo', 'price' => 180000],
+            ['name' => 'Sơ Mi Công Sở Xanh', 'price' => 250000],
+            ['name' => 'Sơ Mi Flannel Caro', 'price' => 320000],
+            ['name' => 'Quần Jean Slimfit', 'price' => 450000],
+            ['name' => 'Quần Short Kaki', 'price' => 200000],
+            ['name' => 'Váy Hoa Nhí', 'price' => 350000],
+            ['name' => 'Đầm Dự Tiệc Đen', 'price' => 550000],
+            ['name' => 'Tất Cổ Cao (Set 3)', 'price' => 50000],
+            ['name' => 'Mũ Lưỡi Trai', 'price' => 120000],
+        ];
+
+        foreach ($products as $key => $p) {
+            Product::create([
+                'code' => 'SP00' . ($key + 1),
+                'name' => $p['name'],
+                'price' => $p['price'],
+                'stock' => rand(5, 50), // Có món ít, món nhiều
+                'category_id' => $catIds[array_rand($catIds)],
+                'supplier_id' => $supIds[array_rand($supIds)],// Bạn có thể thêm ảnh mẫu nếu muốn
+            ]);
+        }
         
-        // 2. Quần jean
-        Product::create(['code' =>'QJX','name' => 'Quần jean xanh skinny', 'category_id' => $pants->id, 'price' => 350000, 'stock' => 15, 'size' => '32', 'color' => 'Xanh']);
-        Product::create(['code' =>'QJD','name' => 'Quần jean đen ống rộng', 'category_id' => $pants->id, 'price' => 380000, 'stock' => 10, 'size' => '30', 'color' => 'Đen']);
-        
-        // 3. Váy
-        Product::create(['code' =>'VHL','name' => 'Váy hoa nhí lụa', 'category_id' => $dresses->id, 'price' => 420000, 'stock' => 18, 'size' => 'S', 'color' => 'Hồng']);
-        Product::create(['code' =>'VXT','name' => 'Váy xếp ly dài', 'category_id' => $dresses->id, 'price' => 390000, 'stock' => 12, 'size' => 'M', 'color' => 'Xám']);
-        
-        // 4. Giày dép
-        Product::create(['code' =>'GDST','name' => 'Giày sneaker trắng', 'category_id' => $shoes->id, 'price' => 550000, 'stock' => 25, 'size' => '40', 'color' => 'Trắng']);
-        Product::create(['code' =>'GDBK','name' => 'Giày bốt da đen', 'category_id' => $shoes->id, 'price' => 700000, 'stock' => 8, 'size' => '38', 'color' => 'Đen']);
-        
-        // 5. Phụ kiện
-        Product::create(['code' =>'PKVT','name' => 'Ví da cầm tay', 'category_id' => $accessories->id, 'price' => 150000, 'stock' => 30, 'size' => 'F', 'color' => 'Nâu']);
-        Product::create(['code' =>'PKDD','name' => 'Dây chuyền bạc', 'category_id' => $accessories->id, 'price' => 180000, 'stock' => 40, 'size' => 'F', 'color' => 'Bạc']);
-    
+        // Tạo thêm 1 món sắp hết hàng để test cảnh báo
+        Product::create([
+            'code' => 'SP_LOW', 'name' => 'Áo Khoác Bán Chạy', 'price' => 600000, 
+            'stock' => 3, // Sắp hết
+            'category_id' => $catIds[0], 'supplier_id' => $supIds[0]
+        ]);
     }
 }

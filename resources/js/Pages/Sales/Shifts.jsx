@@ -317,16 +317,24 @@ export default function Shifts({ activeShift, shifts, liveRevenue, bankOrders })
                     {paginationLinks.length > 3 && (
                         <div className="p-4 border-t flex justify-center flex-wrap gap-1 bg-gray-50">
                             {paginationLinks.map((link, i) => (
-                                <Link
-                                    key={i}
-                                    href={link.url}
-                                    className={`px-3 py-1 border rounded text-sm ${
-                                        link.active 
-                                            ? 'bg-blue-600 text-white border-blue-600' 
-                                            : 'bg-white text-gray-600 hover:bg-gray-100'
-                                    } ${!link.url ? 'opacity-50 pointer-events-none' : ''}`}
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                />
+                                link.url ? (
+                                    <Link
+                                        key={i}
+                                        href={link.url}
+                                        className={`px-3 py-1 border rounded text-sm ${
+                                            link.active 
+                                                ? 'bg-blue-600 text-white border-blue-600' 
+                                                : 'bg-white text-gray-600 hover:bg-gray-100'
+                                        }`}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                ) : (
+                                    <span
+                                        key={i}
+                                        className="px-3 py-1 border rounded text-sm text-gray-400 bg-gray-100 cursor-not-allowed"
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                )
                             ))}
                         </div>
                     )}

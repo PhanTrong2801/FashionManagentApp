@@ -3,7 +3,7 @@ import { usePage, Link, router } from "@inertiajs/react";
 import AdminLayout from "@/Layouts/AdminLayout";
 
 export default function Products() {
-    const { products, categories } = usePage().props;
+    const { products, categories, suppliers } = usePage().props;
 
     const [showForm, setShowForm] = useState(false);
     const [editing, setEditing] = useState(null);
@@ -16,6 +16,7 @@ export default function Products() {
         price: "",
         stock: "",
         category_id: "",
+        supplier_id: "",
     });
 
     const resetForm = () => {
@@ -24,6 +25,7 @@ export default function Products() {
             price: "",
             stock: "",
             category_id: "",
+            supplier_id: "",
         });
         setEditing(null);
     };
@@ -40,6 +42,7 @@ export default function Products() {
             price: p.price,
             stock: p.stock,
             category_id: p.category_id,
+            supplier_id: p.supplier_id || "",
         });
         setShowForm(true);
     };
@@ -129,6 +132,13 @@ export default function Products() {
                         ))}
                     </select>
 
+                    <select className="border p-2 rounded col-span-2" value={form.supplier_id} onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}>
+                        <option value="">-- Chọn Nhà cung cấp (Tùy chọn) --</option>
+                        {suppliers && suppliers.map((s) => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                    </select>
+
                     <button className="col-span-2 bg-green-600 text-white py-2 rounded shadow">
                         {editing ? "Cập nhật" : "Thêm mới"}
                     </button>
@@ -143,6 +153,7 @@ export default function Products() {
                             <tr>
                                 <th className="p-2">Tên</th>
                                 <th className="p-2">Danh mục</th>
+                                <th className="p-3">Nhà cung cấp</th>
                                 <th className="p-2">Giá</th>
                                 <th className="p-2">Tồn kho</th>
                                 <th className="p-2">Hành động</th>
@@ -154,6 +165,9 @@ export default function Products() {
                                 <tr key={p.id} className="border-t">
                                     <td className="p-2">{p.name}</td>
                                     <td className="p-2">{p.category?.name}</td>
+                                    <td className="p-3 text-sm text-blue-600">
+                                        {p.supplier?.name || <span className="text-gray-400">-</span>}
+                                    </td>
                                     <td className="p-2">
                                         {p.price.toLocaleString()}₫
                                     </td>

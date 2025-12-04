@@ -43,6 +43,8 @@ export default function AdminLayout({ children }) {
                     <Link href={route('admin.products')} className="flex items-center p-3 hover:bg-gray-100">
                         🛍 <span className={`ml-3 ${!open && "hidden"}`}>Sản phẩm</span>
                     </Link>
+
+                    
                     <Link 
                         href={route('admin.orders.index')} 
                         className={`flex items-center p-3 hover:bg-gray-100 transition-colors ${route().current('admin.orders.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : 'text-gray-700'}`}
@@ -71,6 +73,13 @@ export default function AdminLayout({ children }) {
                         className={`flex items-center p-3 hover:bg-gray-100 transition-colors ${route().current('admin.reports.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : 'text-gray-700'}`}
                     >
                         📈 <span className={`ml-3 ${!open && "hidden"}`}>Báo cáo</span>
+                    </Link>
+
+                    <Link 
+                        href={route('admin.suppliers.index')} 
+                        className={`flex items-center p-3 hover:bg-gray-100 transition-colors ${route().current('admin.suppliers.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : 'text-gray-700'}`}
+                    >
+                        🏭 <span className={`ml-3 ${!open && "hidden"}`}>Nhà cung cấp</span>
                     </Link>
                 </nav>
             </div>

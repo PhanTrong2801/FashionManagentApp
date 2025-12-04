@@ -17,7 +17,8 @@ class CustomerController extends Controller
                 ->orWhere('phone', 'LIKE', "%$search%");
         })
         ->orderBy('id', 'DESC')
-        ->get();
+        ->paginate(10)
+         ->withQueryString();;
 
         return Inertia::render('Sales/Customers', [
             'customers' => $customers,

@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Supplier;
 
 class ProductController extends Controller
 {
@@ -22,9 +23,25 @@ class ProductController extends Controller
     public function adminIndex()
     {
         return Inertia::render('Admin/Products', [
-            'products' => Product::with('category')->orderBy('id', 'DESC')->get(),
+            'products' => Product::with(['category', 'supplier'])->orderBy('id', 'DESC')->get(),
             'categories' => Category::orderBy('name')->get(),
+            'suppliers' => Supplier::orderBy('name')->get(),
         ]);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            "name" => "required",
+            "price" => "required|numeric",
+            "stock" => "required|numeric",
+            "category_id" => "required|exists:categories,id",
+            "supplier_id" => "nullable|exists:suppliers,id",
+            
+        ]);
+
+        Product::create($request->all());
+        return back();
     }
 
     public function update(Request $request, Product $product)
@@ -34,6 +51,7 @@ class ProductController extends Controller
             "price" => "required|numeric",
             "stock" => "required|numeric",
             "category_id" => "required|exists:categories,id",
+            "supplier_id" => "nullable|exists:suppliers,id",
         ]);
 
         $product->update($request->all());
