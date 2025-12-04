@@ -203,7 +203,6 @@ export default function SalesDashboard({ products: initialProducts, categories: 
     // Xác nhận thanh toán 
     const handleConfirmPayment = () => {
         if (customerMoney < total) {
-            // Không làm gì nếu tiền khách đưa không đủ
             return; 
         }
 

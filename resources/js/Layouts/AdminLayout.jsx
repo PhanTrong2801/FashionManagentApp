@@ -50,7 +50,6 @@ export default function AdminLayout({ children }) {
                         🧾 <span className={`ml-3 ${!open && "hidden"}`}>Hóa đơn</span>
                     </Link>
 
-                    {/* 5. Khách hàng (MỚI) */}
                     <Link 
                         href={route('admin.customers.index')} 
                         className={`flex items-center p-3 hover:bg-gray-100 transition-colors ${route().current('admin.customers.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : 'text-gray-700'}`}
@@ -66,6 +65,12 @@ export default function AdminLayout({ children }) {
                         className={`flex items-center p-3 hover:bg-gray-100 transition-colors ${route().current('admin.payroll.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : 'text-gray-700'}`}
                     >
                         💸 <span className={`ml-3 ${!open && "hidden"}`}>Bảng lương</span>
+                    </Link>
+                    <Link 
+                        href={route('admin.reports.index')} 
+                        className={`flex items-center p-3 hover:bg-gray-100 transition-colors ${route().current('admin.reports.*') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : 'text-gray-700'}`}
+                    >
+                        📈 <span className={`ml-3 ${!open && "hidden"}`}>Báo cáo</span>
                     </Link>
                 </nav>
             </div>

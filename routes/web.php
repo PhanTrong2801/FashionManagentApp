@@ -110,4 +110,8 @@ Route::middleware(['auth', 'role:admin'])
     Route::get('/admin/payroll', [\App\Http\Controllers\Admin\PayrollController::class, 'index'])
     ->name('admin.payroll.index');
 
+    //Bao cao xuat file
+    Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('admin.reports.index');
+    Route::get('/reports/export', [\App\Http\Controllers\Admin\ReportController::class, 'export'])->name('admin.reports.export');
+
 });
