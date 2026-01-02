@@ -10,4 +10,11 @@ export default defineConfig({
         }),
         react(),
     ],
+
+    server: {
+        host: '0.0.0.0', // Cho phép truy cập từ ngoài container
+        hmr: {
+            host: 'localhost', // Ép trình duyệt kết nối tới localhost
+        },
+    },
 });
