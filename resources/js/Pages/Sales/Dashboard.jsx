@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 
@@ -27,6 +27,14 @@ const CustomModal = ({ title, children, actions, onClose }) => (
         </div>
     </div>
 );
+
+const removeVietnameseTones = (str) =>{
+    if (!str) return '';
+    str  = str.toLowerCase();
+    str = str.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+    str = str.replace(/đ/g, "d").replace(/Đ/g, "D");
+    return str;
+}
 
 
 
@@ -75,10 +83,13 @@ export default function SalesDashboard({ products: initialProducts, categories: 
 
     const searchResults = productSearch.trim() === ''
         ?[]
-        :products.filter(p => 
-            p.name.toLowerCase().includes(productSearch.toLowerCase() ||
-            (p.code && p.code.toLowerCase().includes(productSearch.toLowerCase())))
-        );
+        :products.filter(p => {
+            const keyword = removeVietnameseTones(productSearch);
+            const normalizedName = removeVietnameseTones(p.name);
+            const normalizedCode = removeVietnameseTones(p.code || '');
+            
+            return normalizedName.includes(keyword) || normalizedCode.includes(keyword);
+        });
     const handleSelectProductSearch = (product) =>{
         addToCart(product);
         setProductSearch('');
@@ -212,9 +223,9 @@ export default function SalesDashboard({ products: initialProducts, categories: 
             customer_id: selectedCustomer ? selectedCustomer.id : null,
         };
         
-        setData(payload); 
+        //setData(payload); 
 
-        post(route('sales.store'), {
+        router.post(route('sales.store'),payload, {
             onSuccess: () => {
                 // Logic xử lý sau khi thanh toán thành công
                 const remainingCarts = carts.filter(c => c.id !== activeCart);
