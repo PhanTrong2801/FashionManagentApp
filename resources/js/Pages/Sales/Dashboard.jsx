@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Head, useForm, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
@@ -66,6 +66,8 @@ export default function SalesDashboard({ products: initialProducts, categories: 
     const [successMessage, setSuccessMessage] = useState(null);
     const [errorMessage, setErrorMessage] = useState(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 12;
 
     // State khác 
     const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -143,6 +145,24 @@ export default function SalesDashboard({ products: initialProducts, categories: 
         selectedCategory === 'all'
             ? products
             : products.filter((p) => p.category_id === selectedCategory);
+
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedCategory]);
+
+    // Tính toán các chỉ số cắt mảng
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+    // Hàm chuyển trang
+    const goToPage = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
 
     const addToCart = (product) => {
         const existing = currentCart.items.find((p) => p.id === product.id);
@@ -264,6 +284,7 @@ export default function SalesDashboard({ products: initialProducts, categories: 
     };
 
 
+
     return (
         <AuthenticatedLayout>
             <div className="min-h-screen bg-gray-50 flex flex-col p-4">
@@ -291,7 +312,6 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                     </div>
                 </div>
 
-                {/* Main POS Grid (Hai cột: 3/5 Sản phẩm, 2/5 Giỏ hàng) */}
                 <div className="flex-1 grid grid-cols-5 gap-4">
                     
                     {/* Cột trái: Sản phẩm & Danh mục (3/5 width) */}
@@ -331,6 +351,18 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                                                     >
                                                         <div>
                                                             <div className="font-semibold text-gray-800">{p.name}</div>
+                                                            <div className="flex gap-2 mt-1 mb-1">
+                                                                {p.color && (
+                                                                    <span className="text-xs bg-white border border-gray-300 text-gray-600 px-2 py-0.5 rounded shadow-sm">
+                                                                        Màu: <span className="font-medium text-gray-800">{p.color}</span>
+                                                                    </span>
+                                                                )}
+                                                                {p.size && (
+                                                                    <span className="text-xs bg-white border border-gray-300 text-gray-600 px-2 py-0.5 rounded shadow-sm">
+                                                                        Size: <span className="font-medium text-gray-800">{p.size}</span>
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                             <div className="text-xs text-gray-500">Mã: {p.code || '---'} | Kho: {p.stock}</div>
                                                         </div>
                                                         <div className="font-bold text-blue-600">
@@ -378,30 +410,76 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                         </div>
 
                         {/* Danh sách Sản phẩm */}
-                        <div className="flex-1 bg-white rounded-xl shadow-md p-4 overflow-y-auto min-h-[500px]">
-                            <div className="grid grid-cols-3 gap-4">
-                                {filteredProducts.map(product => (
-                                    <div 
-                                        key={product.id} 
-                                        className="bg-gray-100 border border-gray-200 rounded-xl p-3 cursor-pointer hover:shadow-lg hover:border-blue-400 transition transform hover:-translate-y-0.5"
-                                        onClick={() => addToCart(product)}
-                                    >
-                                        <div className="text-sm font-semibold text-gray-800 truncate">{product.name}</div>
-                                        <div className="text-md font-bold text-red-600">{formatCurrency(product.price)}</div>
-                                        <div className="text-xs text-gray-500 mt-1">Kho: {product.stock || 0}</div>
-                                        <button className="mt-2 w-full text-xs bg-blue-500 text-white py-1 rounded-lg hover:bg-blue-600">
-                                            + Thêm
-                                        </button>
-                                    </div>
-                                ))}
-                                {filteredProducts.length === 0 && (
-                                    <p className="col-span-3 text-center text-gray-500 py-10">Không tìm thấy sản phẩm nào.</p>
-                                )}
+                        <div className="flex-1 bg-white rounded-xl shadow-md p-4 flex flex-col min-h-[500px]">
+                            <div className="flex-1 overflow-y-auto"> 
+                                <div className="grid grid-cols-3 gap-4">
+                                    {currentProducts.map(product => (
+                                        <div 
+                                            key={product.id} 
+                                            className="bg-gray-100 border border-gray-200 rounded-xl p-3 cursor-pointer hover:shadow-lg hover:border-blue-400 transition transform hover:-translate-y-0.5"
+                                            onClick={() => addToCart(product)}
+                                        >
+                                            <div className="text-sm font-semibold text-gray-800 truncate">{product.name}</div>
+                                            <div className="flex flex-wrap gap-1 mb-2">
+                                                <span className="text-[10px] bg-white border border-gray-300 text-gray-600 px-2 py-0.5 rounded shadow-sm">
+                                                    {product.color}
+                                                </span>
+                                                <span className="text-[10px] bg-white border border-gray-300 text-gray-600 px-2 py-0.5 rounded shadow-sm">
+                                                    Size: {product.size}
+                                                </span>
+                                            </div>
+                                            <div className="mt-auto">   
+                                                <div className="flex justify-between items-center">
+                                                    <div className="text-md font-bold text-red-600">{formatCurrency(product.price)}</div>
+                                                    <div className="text-xs text-gray-500">Kho: {product.stock || 0}</div>
+                                                </div>
+                                                <button className="mt-2 w-full text-xs bg-blue-500 text-white py-1.5 rounded-lg hover:bg-blue-600 font-medium">
+                                                    + Thêm
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {filteredProducts.length === 0 && (
+                                        <p className="col-span-3 text-center text-gray-500 py-10">Không tìm thấy sản phẩm nào.</p>
+                                    )}
+                                </div>
                             </div>
+                            {/* Phan trang DS san pham */}
+                            {totalPages > 1 && (
+                                <div className="mt-4 pt-3 border-t border-gray-200 flex justify-between items-center flex-none">
+                                    <button
+                                        onClick={() => goToPage(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                                            currentPage === 1 
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                                        }`}
+                                    >
+                                        ← Trước
+                                    </button>
+
+                                    <div className="text-sm text-gray-600 font-medium">
+                                        Trang <span className="text-blue-600">{currentPage}</span> / {totalPages}
+                                    </div>
+
+                                    <button
+                                        onClick={() => goToPage(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                                            currentPage === totalPages 
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                                        }`}
+                                    >
+                                        Sau →
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Cột phải: Giỏ hàng và Thanh toán (2/5 width) */}
+                    {/* Cột phải: Giỏ hàng và Thanh toán  */}
                     <div className="col-span-2 flex flex-col space-y-4">
                         
                         {/* Tab Đơn hàng */}
@@ -420,7 +498,6 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                                     </button>
                                     
                                     <button
-                                        // Sử dụng hàm mới để hiển thị modal xác nhận nếu giỏ hàng có items
                                         onClick={() => handleDeleteCartAttempt(cart.id)} 
                                         className={`text-red-600 font-bold px-2 py-2 text-sm rounded-r-lg hover:text-red-800 transition 
                                             ${activeCart === cart.id ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 hover:bg-gray-300'}
@@ -461,11 +538,15 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                                     <div key={item.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
                                         <div className='flex-1 pr-2'>
                                             <div className='font-medium text-gray-800'>{item.name}</div>
+                                            <div className="text-xs text-gray-500 flex gap-1 mt-0.5">
+                                                <span className="bg-gray-100 px-1 rounded">{item.color}</span>
+                                                <span>/</span>
+                                                <span className="bg-gray-100 px-1 rounded">{item.size}</span>
+                                            </div>
                                             <div className='text-xs text-gray-500'>{formatCurrency(item.price)}</div>
                                         </div>
 
                                         <div className='flex items-center space-x-2'>
-                                            {/* Quantity controls */}
                                             <input
                                                 type="number"
                                                 value={item.quantity}
@@ -474,12 +555,10 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                                                 className="w-16 text-center border-gray-300 rounded-lg p-1 text-sm focus:border-blue-500 focus:ring-blue-500"
                                             />
                                             
-                                            {/* Subtotal */}
                                             <span className='w-24 text-right font-semibold text-gray-700 text-sm'>
                                                 {formatCurrency(item.price * item.quantity)}
                                             </span>
                                             
-                                            {/* Remove button */}
                                             <button 
                                                 onClick={() => removeItem(item.id)}
                                                 className='text-red-500 hover:text-red-700 p-1 rounded-full'
