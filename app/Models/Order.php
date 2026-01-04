@@ -20,6 +20,8 @@ class Order extends Model
         'change_money',   
         'status',
         'shift_id', 
+        'is_edited', 
+        'edit_note',
     ];
 
     public function items()

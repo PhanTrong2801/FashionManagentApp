@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\OrderManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
@@ -101,6 +102,7 @@ Route::middleware(['auth', 'role:admin'])
     Route::resource('admin/users', UserManagementController::class)->names('admin.users');
     Route::get('/admin/shifts', [\App\Http\Controllers\Admin\ShiftManagementController::class, 'index'])->name('admin.shifts.index');
     Route::get('/admin/orders', [\App\Http\Controllers\Admin\OrderManagementController::class, 'index'])->name('admin.orders.index');
+    Route::put('/admin/orders/{order}', [OrderManagementController::class, 'update'])->name('admin.orders.update');
 
     // 2. Quản lý Khách hàng
     Route::get('/admin/customers', [\App\Http\Controllers\Admin\AdminCustomerController::class, 'index'])->name('admin.customers.index');

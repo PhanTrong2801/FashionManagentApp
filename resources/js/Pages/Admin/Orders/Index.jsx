@@ -1,70 +1,266 @@
-import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { Head, Link, router, useForm,usePage } from '@inertiajs/react'; 
 import AdminLayout from '@/Layouts/AdminLayout';
 
 // --- HELPERS ---
 const formatCurrency = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
 const formatDateTime = (d) => new Date(d).toLocaleString('vi-VN');
 
-// --- MODAL CHI TIẾT ĐƠN HÀNG ---
+// --- MODAL CHI TIẾT & CHỈNH SỬA ĐƠN HÀNG ---
 const OrderDetailModal = ({ order, onClose }) => {
+    const [isEditing, setIsEditing] = useState(false);
+
+    const { data, setData, put, processing, reset, errors } = useForm({
+        items: [],
+        edit_note: '',
+    });
+
+    // Khi mở modal hoặc đổi đơn hàng, load dữ liệu vào form
+    useEffect(() => {
+        if (order) {
+            setData({
+                items: order.items.map(item => ({
+                    id: item.id,
+                    product_id: item.product_id,
+                    product_name: item.product?.name, // Lưu tên để hiển thị
+                    quantity: item.quantity,
+                    price: item.price,
+                })),
+                edit_note: order.edit_note || '',
+            });
+            setIsEditing(false); // Mặc định là chế độ xem
+        }
+    }, [order]);
+
     if (!order) return null;
+
+    // Tính tổng tiền realtime khi sửa
+    const currentTotal = data.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    // Xử lý thay đổi số lượng
+    const handleQtyChange = (index, newQty) => {
+        const updatedItems = [...data.items];
+        updatedItems[index].quantity = parseInt(newQty) || 0;
+        setData('items', updatedItems);
+    };
+
+    // Xử lý xóa sản phẩm khỏi đơn
+    const handleRemoveItem = (index) => {
+        if (confirm('Bạn có chắc muốn xóa sản phẩm này khỏi đơn hàng?')) {
+            const updatedItems = data.items.filter((_, i) => i !== index);
+            setData('items', updatedItems);
+        }
+    };
+
+    // Gửi dữ liệu cập nhật
+    const handleSave = () => {
+        if (data.items.length === 0) {
+            alert("Đơn hàng phải có ít nhất 1 sản phẩm!");
+            return;
+        }
+        if (!data.edit_note.trim()) {
+            alert("Vui lòng nhập lý do chỉnh sửa!");
+            return;
+        }
+
+        put(route('admin.orders.update', order.id), {
+            onSuccess: () => {
+                setIsEditing(false);
+                // onClose(); // Tùy chọn: Có thể đóng modal luôn hoặc giữ lại để xem kết quả
+            }
+        });
+    };
+
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-                <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
-                    <h3 className="text-lg font-bold">Chi tiết đơn hàng #{order.invoice_code || order.id}</h3>
-                    <button onClick={onClose} className="text-white hover:text-gray-200">&times;</button>
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                
+                {/* Header Modal */}
+                <div className={`p-4 flex justify-between items-center ${isEditing ? 'bg-yellow-600' : 'bg-blue-600'} text-white`}>
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                        {isEditing ? '🛠 ĐANG CHỈNH SỬA: ' : 'Chi tiết đơn hàng #'}
+                        {order.invoice_code || order.id}
+                        {order.is_edited && !isEditing && (
+                            <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded ml-2 animate-pulse">Đã chỉnh sửa</span>
+                        )}
+                    </h3>
+                    <button onClick={onClose} className="text-white hover:text-gray-200 text-2xl">&times;</button>
                 </div>
-                <div className="p-6 max-h-[70vh] overflow-y-auto">
-                    <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+
+                {/* Body Modal */}
+                <div className="p-6 overflow-y-auto flex-1">
+                    
+                    {/* Thông tin chung */}
+                    <div className="grid grid-cols-2 gap-4 mb-6 text-sm border-b pb-4">
                         <div>
                             <p className="text-gray-500">Khách hàng:</p>
-                            <p className="font-bold">{order.customer?.name || 'Khách lẻ'}</p>
+                            <p className="font-bold text-lg">{order.customer?.name || 'Khách lẻ'}</p>
                             <p>{order.customer?.phone}</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-gray-500">Ngày tạo:</p>
-                            <p className="font-bold">{formatDateTime(order.created_at)}</p>
-                            <p className="text-gray-500">Nhân viên: {order.user?.name}</p>
+                            <p className="text-gray-500">Trạng thái hiện tại:</p>
+                            <p className="font-bold">{order.is_edited ? <span className="text-red-500">Đã qua chỉnh sửa</span> : <span className="text-green-600">Gốc</span>}</p>
+                            {order.edit_note && (
+                                <p className="text-xs text-red-500 italic mt-1">Note: {order.edit_note}</p>
+                            )}
                         </div>
                     </div>
 
-                    <table className="w-full text-left border-collapse text-sm mb-4">
-                        <thead className="bg-gray-100">
-                            <tr>
-                                <th className="p-2 border">Sản phẩm</th>
-                                <th className="p-2 border text-center">SL</th>
-                                <th className="p-2 border text-right">Đơn giá</th>
-                                <th className="p-2 border text-right">Thành tiền</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {order.items.map((item, idx) => (
-                                <tr key={idx}>
-                                    <td className="p-2 border">{item.product?.name || 'SP đã xóa'}</td>
-                                    <td className="p-2 border text-center">{item.quantity}</td>
-                                    <td className="p-2 border text-right">{formatCurrency(item.price)}</td>
-                                    <td className="p-2 border text-right">{formatCurrency(item.price * item.quantity)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    {/* --- CHẾ ĐỘ XEM (VIEW MODE) --- */}
+                    {!isEditing ? (
+                        <>
+                            <table className="w-full text-left border-collapse text-sm mb-4">
+                                <thead className="bg-gray-100">
+                                    <tr>
+                                        <th className="p-2 border">Sản phẩm</th>
+                                        <th className="p-2 border text-center">SL</th>
+                                        <th className="p-2 border text-right">Đơn giá</th>
+                                        <th className="p-2 border text-right">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {order.items.map((item, idx) => (
+                                        <tr key={idx}>
+                                            <td className="p-2 border">{item.product?.name || <span className='text-red-500'>SP đã xóa</span>}</td>
+                                            <td className="p-2 border text-center">{item.quantity}</td>
+                                            <td className="p-2 border text-right">{formatCurrency(item.price)}</td>
+                                            <td className="p-2 border text-right">{formatCurrency(item.price * item.quantity)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            <div className="flex justify-end text-xl font-bold text-red-600">
+                                Tổng cộng: {formatCurrency(order.total_amount)}
+                            </div>
+                        </>
+                    ) : (
+                        /* --- CHẾ ĐỘ CHỈNH SỬA (EDIT MODE) --- */
+                        <div className="space-y-4">
+                            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded text-sm text-yellow-800 mb-2">
+                                ⚠️ Lưu ý: Việc chỉnh sửa sẽ cập nhật lại tồn kho. Hãy kiểm tra kỹ!
+                            </div>
 
-                    <div className="flex justify-end text-lg font-bold text-red-600">
-                        Tổng cộng: {formatCurrency(order.total_amount)}
-                    </div>
+                            <table className="w-full text-left border-collapse text-sm">
+                                <thead className="bg-gray-100">
+                                    <tr>
+                                        <th className="p-2 border">Sản phẩm</th>
+                                        <th className="p-2 border text-center w-20">SL</th>
+                                        <th className="p-2 border text-right">Đơn giá</th>
+                                        <th className="p-2 border text-right">Thành tiền</th>
+                                        <th className="p-2 border text-center">Xóa</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.items.map((item, idx) => (
+                                        <tr key={idx} className="hover:bg-gray-50">
+                                            <td className="p-2 border font-medium">
+                                                {item.product_name || 'SP không xác định'}
+                                            </td>
+                                            <td className="p-2 border text-center">
+                                                <input 
+                                                    type="number" 
+                                                    min="1"
+                                                    className="w-16 p-1 border rounded text-center focus:border-blue-500 focus:ring-blue-500"
+                                                    value={item.quantity}
+                                                    onChange={(e) => handleQtyChange(idx, e.target.value)}
+                                                />
+                                            </td>
+                                            <td className="p-2 border text-right text-gray-500">
+                                                {formatCurrency(item.price)}
+                                            </td>
+                                            <td className="p-2 border text-right font-bold">
+                                                {formatCurrency(item.price * item.quantity)}
+                                            </td>
+                                            <td className="p-2 border text-center">
+                                                <button 
+                                                    onClick={() => handleRemoveItem(idx)}
+                                                    className="text-red-500 hover:text-red-700 font-bold px-2"
+                                                >
+                                                    &times;
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+
+                            {/* Khu vực Tổng tiền & Ghi chú */}
+                            <div className="flex flex-col items-end gap-2 mt-4 border-t pt-4">
+                                <div className="text-xl font-bold text-blue-600">
+                                    Tổng mới: {formatCurrency(currentTotal)}
+                                </div>
+                                <div className="w-full">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Lý do chỉnh sửa (*):</label>
+                                    <textarea
+                                        className="w-full border rounded p-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Ví dụ: Khách đổi ý, Nhập sai số lượng..."
+                                        rows="2"
+                                        value={data.edit_note}
+                                        onChange={(e) => setData('edit_note', e.target.value)}
+                                    ></textarea>
+                                    {errors.edit_note && <p className="text-red-500 text-xs mt-1">{errors.edit_note}</p>}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <div className="bg-gray-50 p-4 text-right">
-                    <button onClick={onClose} className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">Đóng</button>
+
+                {/* Footer Modal */}
+                <div className="bg-gray-50 p-4 border-t flex justify-end gap-3">
+                    {!isEditing ? (
+                        <>
+                            <button onClick={onClose} className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 font-medium">
+                                Đóng
+                            </button>
+                            {/* Nút bật chế độ sửa */}
+                            <button 
+                                onClick={() => setIsEditing(true)} 
+                                className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 font-bold flex items-center gap-2"
+                            >
+                                ✏️ Chỉnh sửa đơn hàng
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button 
+                                onClick={() => { setIsEditing(false); reset(); }} // Hủy sửa -> Reset form về ban đầu
+                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 font-medium"
+                                disabled={processing}
+                            >
+                                Hủy bỏ
+                            </button>
+                            <button 
+                                onClick={handleSave} 
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold shadow-lg flex items-center gap-2"
+                                disabled={processing}
+                            >
+                                {processing ? 'Đang lưu...' : '💾 Lưu thay đổi'}
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
     );
 };
 
-// --- TRANG CHÍNH ---
+// --- TRANG CHÍNH (Giữ nguyên phần chính, chỉ thay đổi OrderDetailModal) ---
 export default function OrderIndex({ orders, filters }) {
+    // 1. Lấy props flash từ Laravel trả về
+    const { flash } = usePage().props;
+    
+    // 2. State để điều khiển hiển thị thông báo
+    const [showSuccess, setShowSuccess] = useState(false);
+
+    // 3. Tự động hiện thông báo khi có flash.success mới
+    useEffect(() => {
+        if (flash.success) {
+            setShowSuccess(true);
+            const timer = setTimeout(() => setShowSuccess(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [flash]);
+
     const [search, setSearch] = useState(filters.search || '');
     const [date, setDate] = useState(filters.date || '');
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -118,9 +314,10 @@ export default function OrderIndex({ orders, filters }) {
                             <tr><td colSpan="7" className="p-6 text-center text-gray-500">Không tìm thấy đơn hàng nào.</td></tr>
                         ) : (
                             orders.data.map((order) => (
-                                <tr key={order.id} className="hover:bg-gray-50 transition cursor-pointer" onClick={() => setSelectedOrder(order)}>
+                                <tr key={order.id} className={`hover:bg-gray-50 transition cursor-pointer ${order.is_edited ? 'bg-yellow-50/50' : ''}`} onClick={() => setSelectedOrder(order)}>
                                     <td className="p-4 font-bold text-blue-600">
                                         {order.invoice_code || `#${order.id}`}
+                                        {order.is_edited && <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-1 py-0.5 rounded border border-red-200">EDITED</span>}
                                     </td>
                                     <td className="p-4 text-gray-600">{formatDateTime(order.created_at)}</td>
                                     <td className="p-4">
@@ -141,7 +338,7 @@ export default function OrderIndex({ orders, filters }) {
                                         {formatCurrency(order.total_amount)}
                                     </td>
                                     <td className="p-4 text-center">
-                                        <button className="text-blue-600 hover:underline">Xem</button>
+                                        <button className="text-blue-600 hover:underline">Chi tiết</button>
                                     </td>
                                 </tr>
                             ))
@@ -152,7 +349,6 @@ export default function OrderIndex({ orders, filters }) {
                 <div className="p-4 border-t flex justify-center gap-1">
                     {orders.links.map((link, i) => (
                         link.url ? (
-                            // Trường hợp có link: Dùng thẻ Link để chuyển trang
                             <Link
                                 key={i}
                                 href={link.url}
@@ -164,7 +360,6 @@ export default function OrderIndex({ orders, filters }) {
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
                         ) : (
-                            // Trường hợp url là null (Nút Previous/Next bị disable): Dùng thẻ span
                             <span
                                 key={i}
                                 className="px-3 py-1 border rounded text-sm text-gray-400 bg-gray-50 cursor-not-allowed"
@@ -175,8 +370,19 @@ export default function OrderIndex({ orders, filters }) {
                 </div>
             </div>
 
-            {/* Modal Chi tiết */}
+            {/* Modal Chi tiết & Chỉnh sửa */}
             <OrderDetailModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+            
+            {showSuccess && flash.success && (
+                <div className="fixed bottom-5 right-5 bg-green-600 text-white px-6 py-4 rounded-lg shadow-2xl z-50 flex items-center gap-3 animate-bounce-in">
+                    <span className="text-2xl">✅</span>
+                    <div>
+                        <h4 className="font-bold text-sm">Thành công!</h4>
+                        <p className="text-sm">{flash.success}</p>
+                    </div>
+                    <button onClick={() => setShowSuccess(false)} className="ml-4 hover:text-green-200 font-bold">&times;</button>
+                </div>
+            )}
         </AdminLayout>
     );
 }

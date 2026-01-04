@@ -37,6 +37,11 @@ class HandleInertiaRequests extends Middleware
                 ? $request->user()->work_sessions()->whereNull('check_out')->exists() 
                 : false,
             ],
+
+            'flash' => [
+            'success' => fn () => $request->session()->get('success'),
+            'error' => fn () => $request->session()->get('error'),
+            ],
         ];
     }
 }
