@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 use function Symfony\Component\Clock\now;
@@ -61,5 +62,21 @@ class PayrollController extends Controller
         $year = $request->input('year', date('y'));
 
         return Excel::download(new PayrollExport($month,$year), "bang-luong-thang-$month-$year.xlsx");
+    }
+
+    public function getDetails(Request $request, $id)
+    {
+        $month = $request->input('month');
+        $year = $request->input('year');
+
+        $sessions =DB::table('work_sessions')
+            ->where('user_id', $id)
+            ->whereMonth('check_in', $month)
+            ->whereYear('check_in', $year)
+            ->orderBy('check_in', 'desc')
+            ->select('check_in', 'check_out', 'duration_minutes') 
+            ->get();
+
+        return response()->json($sessions);
     }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link, router, useForm,usePage } from '@inertiajs/react'; 
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react'; 
 import AdminLayout from '@/Layouts/AdminLayout';
 
 // --- HELPERS ---
@@ -22,13 +22,16 @@ const OrderDetailModal = ({ order, onClose }) => {
                 items: order.items.map(item => ({
                     id: item.id,
                     product_id: item.product_id,
-                    product_name: item.product?.name, // Lưu tên để hiển thị
+                    product_name: item.product?.name, 
+                    product_color: item.product?.color, 
+                    product_size: item.product?.size,
+                    product_code: item.product?.code,
                     quantity: item.quantity,
                     price: item.price,
                 })),
                 edit_note: order.edit_note || '',
             });
-            setIsEditing(false); // Mặc định là chế độ xem
+            setIsEditing(false); 
         }
     }, [order]);
 
@@ -36,6 +39,11 @@ const OrderDetailModal = ({ order, onClose }) => {
 
     // Tính tổng tiền realtime khi sửa
     const currentTotal = data.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    // --- 2. TÍNH TOÁN TIỀN KHÁCH ĐƯA & TIỀN THỐI (Dùng cho chế độ XEM) ---
+    const customerPay = order.customer_money || 0; 
+    const changeDue = customerPay - order.total_amount; 
+    // ---------------------------------------------------------------------
 
     // Xử lý thay đổi số lượng
     const handleQtyChange = (index, newQty) => {
@@ -66,7 +74,6 @@ const OrderDetailModal = ({ order, onClose }) => {
         put(route('admin.orders.update', order.id), {
             onSuccess: () => {
                 setIsEditing(false);
-                // onClose(); // Tùy chọn: Có thể đóng modal luôn hoặc giữ lại để xem kết quả
             }
         });
     };
@@ -81,7 +88,7 @@ const OrderDetailModal = ({ order, onClose }) => {
                         {isEditing ? '🛠 ĐANG CHỈNH SỬA: ' : 'Chi tiết đơn hàng #'}
                         {order.invoice_code || order.id}
                         {order.is_edited && !isEditing && (
-                            <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded ml-2 animate-pulse">Đã chỉnh sửa</span>
+                            <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded ml-2 animate-pulse">Edited</span>
                         )}
                     </h3>
                     <button onClick={onClose} className="text-white hover:text-gray-200 text-2xl">&times;</button>
@@ -99,9 +106,9 @@ const OrderDetailModal = ({ order, onClose }) => {
                         </div>
                         <div className="text-right">
                             <p className="text-gray-500">Trạng thái hiện tại:</p>
-                            <p className="font-bold">{order.is_edited ? <span className="text-red-500">Đã qua chỉnh sửa</span> : <span className="text-green-600">Gốc</span>}</p>
+                            <p className="font-bold">{order.is_edited ? <span className="text-red-500">Đã chỉnh sửa</span> : <span className="text-green-600">Gốc</span>}</p>
                             {order.edit_note && (
-                                <p className="text-xs text-red-500 italic mt-1">Note: {order.edit_note}</p>
+                                <p className="text-xs text-red-500 italic mt-1 bg-red-50 p-1 rounded inline-block">Note: {order.edit_note}</p>
                             )}
                         </div>
                     </div>
@@ -113,6 +120,7 @@ const OrderDetailModal = ({ order, onClose }) => {
                                 <thead className="bg-gray-100">
                                     <tr>
                                         <th className="p-2 border">Sản phẩm</th>
+                                        <th className="p-2 border text-center">P.Loại</th> 
                                         <th className="p-2 border text-center">SL</th>
                                         <th className="p-2 border text-right">Đơn giá</th>
                                         <th className="p-2 border text-right">Thành tiền</th>
@@ -121,7 +129,16 @@ const OrderDetailModal = ({ order, onClose }) => {
                                 <tbody>
                                     {order.items.map((item, idx) => (
                                         <tr key={idx}>
-                                            <td className="p-2 border">{item.product?.name || <span className='text-red-500'>SP đã xóa</span>}</td>
+                                            <td className="p-2 border">
+                                                <div className="font-medium">{item.product?.name || <span className='text-red-500'>SP đã xóa</span>}</div>
+                                                <div className="text-xs text-gray-500">{item.product?.code}</div>
+                                            </td>
+                                            <td className="p-2 border text-center text-xs">
+                                                <div className='flex flex-col items-center gap-1'>
+                                                    {item.product?.color && <span className="bg-gray-100 text-gray-600 px-1 rounded border">{item.product.color}</span>}
+                                                    {item.product?.size && <span className="bg-white text-gray-800 px-1 rounded border font-bold">Sz: {item.product.size}</span>}
+                                                </div>
+                                            </td>
                                             <td className="p-2 border text-center">{item.quantity}</td>
                                             <td className="p-2 border text-right">{formatCurrency(item.price)}</td>
                                             <td className="p-2 border text-right">{formatCurrency(item.price * item.quantity)}</td>
@@ -129,12 +146,27 @@ const OrderDetailModal = ({ order, onClose }) => {
                                     ))}
                                 </tbody>
                             </table>
-                            <div className="flex justify-end text-xl font-bold text-red-600">
-                                Tổng cộng: {formatCurrency(order.total_amount)}
+                            
+                            {/* --- 5. HIỂN THỊ TIỀN KHÁCH ĐƯA VÀ TIỀN THỪA --- */}
+                            <div className="flex flex-col items-end gap-1 mt-4 border-t pt-4">
+                                <div className="flex justify-between w-64 text-sm">
+                                    <span className="text-gray-600">Tổng tiền hàng:</span>
+                                    <span className="font-bold">{formatCurrency(order.total_amount)}</span>
+                                </div>
+                                <div className="flex justify-between w-64 text-sm">
+                                    <span className="text-gray-600">Tiền khách đưa:</span>
+                                    <span className="font-bold text-green-600">
+                                        {customerPay > 0 ? formatCurrency(customerPay) : '---'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between w-64 text-xl font-bold text-red-600 border-t border-dashed border-gray-300 pt-2 mt-1">
+                                    <span>Tiền thừa:</span>
+                                    <span>{changeDue >= 0 ? formatCurrency(changeDue) : '0₫'}</span>
+                                </div>
                             </div>
                         </>
                     ) : (
-                        /* --- CHẾ ĐỘ CHỈNH SỬA (EDIT MODE) --- */
+                        /* --- CHẾ ĐỘ CHỈNH SỬA */
                         <div className="space-y-4">
                             <div className="bg-yellow-50 border border-yellow-200 p-3 rounded text-sm text-yellow-800 mb-2">
                                 ⚠️ Lưu ý: Việc chỉnh sửa sẽ cập nhật lại tồn kho. Hãy kiểm tra kỹ!
@@ -144,6 +176,7 @@ const OrderDetailModal = ({ order, onClose }) => {
                                 <thead className="bg-gray-100">
                                     <tr>
                                         <th className="p-2 border">Sản phẩm</th>
+                                        <th className="p-2 border text-center">P.Loại</th>
                                         <th className="p-2 border text-center w-20">SL</th>
                                         <th className="p-2 border text-right">Đơn giá</th>
                                         <th className="p-2 border text-right">Thành tiền</th>
@@ -155,6 +188,13 @@ const OrderDetailModal = ({ order, onClose }) => {
                                         <tr key={idx} className="hover:bg-gray-50">
                                             <td className="p-2 border font-medium">
                                                 {item.product_name || 'SP không xác định'}
+                                                <div className="text-xs text-gray-400 font-normal">{item.product_code}</div>
+                                            </td>
+                                            <td className="p-2 border text-center text-xs">
+                                                <div className='flex flex-col items-center gap-1'>
+                                                     {item.product_color && <span className="bg-gray-100 px-1 rounded border">{item.product_color}</span>}
+                                                     {item.product_size && <span className="bg-white px-1 rounded border font-bold">Sz: {item.product_size}</span>}
+                                                </div>
                                             </td>
                                             <td className="p-2 border text-center">
                                                 <input 
@@ -212,7 +252,6 @@ const OrderDetailModal = ({ order, onClose }) => {
                             <button onClick={onClose} className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 font-medium">
                                 Đóng
                             </button>
-                            {/* Nút bật chế độ sửa */}
                             <button 
                                 onClick={() => setIsEditing(true)} 
                                 className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 font-bold flex items-center gap-2"
@@ -223,7 +262,7 @@ const OrderDetailModal = ({ order, onClose }) => {
                     ) : (
                         <>
                             <button 
-                                onClick={() => { setIsEditing(false); reset(); }} // Hủy sửa -> Reset form về ban đầu
+                                onClick={() => { setIsEditing(false); reset(); }} 
                                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 font-medium"
                                 disabled={processing}
                             >
@@ -244,15 +283,11 @@ const OrderDetailModal = ({ order, onClose }) => {
     );
 };
 
-// --- TRANG CHÍNH (Giữ nguyên phần chính, chỉ thay đổi OrderDetailModal) ---
+// --- TRANG CHÍNH  ---
 export default function OrderIndex({ orders, filters }) {
-    // 1. Lấy props flash từ Laravel trả về
     const { flash } = usePage().props;
-    
-    // 2. State để điều khiển hiển thị thông báo
     const [showSuccess, setShowSuccess] = useState(false);
 
-    // 3. Tự động hiện thông báo khi có flash.success mới
     useEffect(() => {
         if (flash.success) {
             setShowSuccess(true);
@@ -276,7 +311,6 @@ export default function OrderIndex({ orders, filters }) {
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <h1 className="text-2xl font-bold text-gray-800">🧾 Danh Sách Hóa Đơn</h1>
                 
-                {/* Bộ lọc */}
                 <div className="flex gap-2 w-full md:w-auto">
                     <input 
                         type="date" 
@@ -354,8 +388,8 @@ export default function OrderIndex({ orders, filters }) {
                                 href={link.url}
                                 className={`px-3 py-1 border rounded text-sm ${
                                     link.active 
-                                        ? 'bg-blue-600 text-white border-blue-600' 
-                                        : 'bg-white text-gray-600 hover:bg-gray-100'
+                                    ? 'bg-blue-600 text-white border-blue-600' 
+                                    : 'bg-white text-gray-600 hover:bg-gray-100'
                                 }`}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
@@ -370,7 +404,6 @@ export default function OrderIndex({ orders, filters }) {
                 </div>
             </div>
 
-            {/* Modal Chi tiết & Chỉnh sửa */}
             <OrderDetailModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
             
             {showSuccess && flash.success && (

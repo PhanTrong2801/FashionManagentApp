@@ -1,8 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import axios from 'axios';
 
 const formatVND = (n) => Number(n).toLocaleString('vi-VN') + ' ₫';
+const formatDate = (d) => new Date(d).toLocaleDateString('vi-VN');
+const formatTime = (d) => new Date(d).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+// --- MODAL CHI TIẾT GIỜ LÀM ---
+const SessionDetailModal = ({ user, month, year, onClose }) => {
+    const [sessions, setSessions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Gọi API lấy dữ liệu khi Modal mở ra
+    useEffect(() => {
+        axios.get(route('admin.payroll.details', user.id), {
+            params: { month, year }
+        })
+        .then(response => {
+            setSessions(response.data);
+            setLoading(false);
+        })
+        .catch(error => {
+            console.error("Lỗi tải dữ liệu:", error);
+            setLoading(false);
+        });
+    }, [user.id, month, year]);
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div className="bg-blue-600 p-4 flex justify-between items-center text-white">
+                    <h3 className="text-lg font-bold">
+                        📅 Chi tiết chấm công: {user.name}
+                    </h3>
+                    <button onClick={onClose} className="text-white hover:text-gray-200 text-2xl">&times;</button>
+                </div>
+                
+                <div className="p-4 bg-gray-50 border-b text-sm text-gray-700">
+                    Đang xem dữ liệu: <b>Tháng {month}/{year}</b>
+                </div>
+
+                {/* Body - Table */}
+                <div className="p-0 overflow-y-auto flex-1">
+                    {loading ? (
+                        <div className="p-8 text-center text-gray-500">⏳ Đang tải dữ liệu...</div>
+                    ) : (
+                        <table className="w-full text-left border-collapse text-sm">
+                            <thead className="bg-gray-100 text-gray-600 sticky top-0">
+                                <tr>
+                                    <th className="p-3 border-b">Ngày</th>
+                                    <th className="p-3 border-b text-center">Giờ vào</th>
+                                    <th className="p-3 border-b text-center">Giờ ra</th>
+                                    <th className="p-3 border-b text-center">Số tiếng</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {sessions.length === 0 ? (
+                                    <tr><td colSpan="4" className="p-4 text-center text-gray-500">Không có ca làm nào trong tháng này.</td></tr>
+                                ) : (
+                                    sessions.map((session, index) => (
+                                        <tr key={index} className="hover:bg-blue-50">
+                                            <td className="p-3 border-b font-medium text-gray-800">
+                                                {formatDate(session.check_in)}
+                                            </td>
+                                            <td className="p-3 border-b text-center text-green-600">
+                                                {formatTime(session.check_in)}
+                                            </td>
+                                            <td className="p-3 border-b text-center text-red-600">
+                                                {session.check_out ? formatTime(session.check_out) : '--:--'}
+                                            </td>
+                                            <td className="p-3 border-b text-center font-bold">
+                                                {session.duration_minutes 
+                                                ? (session.duration_minutes / 60).toFixed(2) + 'h' 
+                                                : '---'}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="p-4 border-t bg-gray-50 text-right">
+                     <button onClick={onClose} className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 font-medium">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 // --- MODAL SỬA LƯƠNG ---
 const EditRateModal = ({ user, onClose }) => {
@@ -48,6 +139,7 @@ export default function PayrollIndex({ payroll, filters }) {
     const [month, setMonth] = useState(filters.month);
     const [year, setYear] = useState(filters.year);
     const [editingUser, setEditingUser] = useState(null); // State để mở Modal
+    const [viewingUser, setViewingUser] = useState(null);
 
     const handleFilter = () => {
         router.get(route('admin.payroll.index'), { month, year }, { preserveState: true });
@@ -94,7 +186,6 @@ export default function PayrollIndex({ payroll, filters }) {
 
                     <div className="w-px h-6 bg-gray-300 mx-1"></div>
 
-                    {/* ✨ NÚT XUẤT EXCEL MỚI ✨ */}
                     <button 
                         onClick={handleExport} 
                         className="bg-green-600 text-white px-4 py-1.5 rounded text-sm hover:bg-green-700 flex items-center gap-2 shadow-sm"
@@ -113,6 +204,7 @@ export default function PayrollIndex({ payroll, filters }) {
                             <th className="p-4 border-b text-center">Tổng giờ làm</th>
                             <th className="p-4 border-b text-right">Lương/Giờ</th>
                             <th className="p-4 border-b text-right text-blue-700">Thực nhận</th>
+                            <th className="p-4 border-b text-center">Chi tiết</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 text-sm">
@@ -127,7 +219,6 @@ export default function PayrollIndex({ payroll, filters }) {
                                     <td className="p-4 text-center">{p.sessions_count}</td>
                                     <td className="p-4 text-center font-mono">{p.total_hours}h</td>
                                     
-                                    {/* ✨ CỘT LƯƠNG CÓ THỂ BẤM VÀO ĐỂ SỬA ✨ */}
                                     <td className="p-4 text-right">
                                         <button 
                                             onClick={() => setEditingUser(p)}
@@ -141,6 +232,14 @@ export default function PayrollIndex({ payroll, filters }) {
 
                                     <td className="p-4 text-right font-bold text-lg text-blue-600">
                                         {formatVND(p.total_salary)}
+                                    </td>
+                                    <td className="p-4 text-center">
+                                        <button 
+                                            onClick={() => setViewingUser(p)}
+                                            className="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-full text-xs font-bold transition"
+                                        >
+                                            👁️ Xem
+                                        </button>
                                     </td>
                                 </tr>
                             ))
@@ -156,6 +255,17 @@ export default function PayrollIndex({ payroll, filters }) {
                     onClose={() => setEditingUser(null)} 
                 />
             )}
+
+            {/* Modal Chi Tiết  */}
+            {viewingUser && (
+                <SessionDetailModal 
+                    user={viewingUser} 
+                    month={filters.month} 
+                    year={filters.year}
+                    onClose={() => setViewingUser(null)} 
+                />
+            )}
+
         </AdminLayout>
     );
 }

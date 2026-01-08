@@ -103,6 +103,7 @@ Route::middleware(['auth', 'role:admin'])
     Route::get('/admin/shifts', [\App\Http\Controllers\Admin\ShiftManagementController::class, 'index'])->name('admin.shifts.index');
     Route::get('/admin/orders', [\App\Http\Controllers\Admin\OrderManagementController::class, 'index'])->name('admin.orders.index');
     Route::put('/admin/orders/{order}', [OrderManagementController::class, 'update'])->name('admin.orders.update');
+    
 
     // 2. Quản lý Khách hàng
     Route::get('/admin/customers', [\App\Http\Controllers\Admin\AdminCustomerController::class, 'index'])->name('admin.customers.index');
@@ -110,6 +111,7 @@ Route::middleware(['auth', 'role:admin'])
     Route::get('/admin/payroll', [\App\Http\Controllers\Admin\PayrollController::class, 'index'])->name('admin.payroll.index');
     Route::post('/payroll/{id}/rate', [\App\Http\Controllers\Admin\PayrollController::class, 'updateRate'])->name('admin.payroll.update_rate');
     Route::get('/payroll/export', [\App\Http\Controllers\Admin\PayrollController::class, 'export'])->name('admin.payroll.export');
+    Route::get('/admin/payroll/details/{id}', [\App\Http\Controllers\Admin\PayrollController::class, 'getDetails'])->name('admin.payroll.details');
 
     //Bao cao xuat file
     Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('admin.reports.index');
