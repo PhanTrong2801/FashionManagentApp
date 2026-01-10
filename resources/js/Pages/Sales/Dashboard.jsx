@@ -768,22 +768,53 @@ export default function SalesDashboard({ products: initialProducts, categories: 
                         </>
                     }
                 >
-                    <div className="border border-dashed border-gray-300 p-4 rounded-lg bg-gray-50">
-                        <p className='text-center font-bold text-lg mb-2'>--- HÓA ĐƠN TẠM TÍNH ---</p>
-                        {currentCart.items.map(item => (
-                            <div key={item.id} className="flex justify-between text-sm py-1">
-                                <span>{item.name} x {item.quantity}</span>
-                                <span>{formatCurrency(item.price * item.quantity)}</span>
-                            </div>
-                        ))}
-                        <hr className="my-2 border-gray-300" />
-                        <div className="flex justify-between font-bold text-lg text-gray-800">
+                    <div className="border border-dashed border-gray-400 p-4 rounded-sm bg-yellow-50 text-gray-800 font-mono text-sm">
+                        <div className='text-center mb-4'>
+                            <h3 className='font-bold text-xl uppercase'>HÓA ĐƠN BÁN LẺ</h3>
+                            <p className='text-xs italic'>(Phiếu tạm tính)</p>
+                            <p className='text-xs mt-1'>{new Date().toLocaleString('vi-VN')}</p>
+                        </div>
+
+                        <div className="border-t border-b border-dashed border-gray-400 py-2 mb-2">
+                            {currentCart.items.map(item => (
+                                <div key={item.id} className="py-2 border-b border-dashed border-gray-300 last:border-0">
+                                    <div className="font-bold">{item.name}</div>
+                                    
+                                    <div className="flex justify-between items-end mt-1">
+                                        <div className="text-xs text-gray-600">
+                                            <div>
+                                                {item.color && <span>Màu: {item.color}</span>}
+                                                {item.color && item.size && <span className="mx-1">|</span>}
+                                                {item.size && <span>Size: {item.size}</span>}
+                                            </div>
+                                            <div>
+                                                SL: <strong>{item.quantity}</strong> x {formatCurrency(item.price)}
+                                            </div>
+                                        </div>
+
+                                        <div className="font-bold">
+                                            {formatCurrency(item.price * item.quantity)}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex justify-between font-bold text-lg mt-3 pt-2 border-t border-gray-400">
                             <span>TỔNG CỘNG:</span>
                             <span>{formatCurrency(total)}</span>
                         </div>
+
                         {selectedCustomer && (
-                            <div className='mt-2 text-xs text-gray-600'>KH: {selectedCustomer.name} - {selectedCustomer.phone}</div>
+                            <div className='mt-3 pt-2 border-t border-dashed border-gray-400 text-xs'>
+                                <p>Khách hàng: <strong>{selectedCustomer.name}</strong></p>
+                                <p>SĐT: {selectedCustomer.phone}</p>
+                            </div>
                         )}
+                        
+                        <div className='text-center mt-6 text-xs italic'>
+                            *** Xin cảm ơn và hẹn gặp lại! ***
+                        </div>
                     </div>
                 </CustomModal>
             )}

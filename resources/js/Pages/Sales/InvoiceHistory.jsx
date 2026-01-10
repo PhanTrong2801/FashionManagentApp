@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
-// ... (Giữ nguyên các hàm helper formatCurrency, formatDateTime...)
+// (các hàm helper formatCurrency, formatDateTime...)
 const formatCurrency = (amount) => {
     const num = Number(amount) || 0; 
     return num.toLocaleString('vi-VN') + '₫';
@@ -47,7 +47,7 @@ export default function InvoiceHistory({ invoices, filters, auth }) {
 
     function clearFilter() {
         setDay(today);
-        setSearch(''); // Xóa ô tìm kiếm
+        setSearch('');
         router.get("/sales/invoices");
     }
 
@@ -168,13 +168,30 @@ export default function InvoiceHistory({ invoices, filters, auth }) {
                                                     </span>
                                                     <span className="text-xs text-gray-400">▼</span>
                                                 </summary>
-                                                <div className="mt-2 p-2 bg-gray-50 rounded border border-gray-100 text-xs space-y-1">
+                                                <div className="absolute z-10 mt-2 p-3 bg-white rounded-lg shadow-xl border border-gray-200 w-64 text-xs space-y-2">
                                                     {invoice.items.map((i) => (
-                                                        <div key={i.id} className="flex justify-between items-center">
-                                                            <span className="truncate w-40 text-gray-700">
-                                                                {i.product?.name || 'Sản phẩm đã xóa'}
-                                                            </span>
-                                                            <span className="font-mono text-gray-500">x{i.quantity}</span>
+                                                        <div key={i.id} className="border-b border-dashed border-gray-200 last:border-0 pb-2 last:pb-0">
+                                                            <div className="flex justify-between items-start mb-1">
+                                                                <span className="font-medium text-gray-800 line-clamp-2 pr-2">
+                                                                    {i.product?.name || <span className="text-red-400 italic">Sản phẩm đã xóa</span>}
+                                                                </span>
+                                                                <span className="font-mono font-bold text-blue-600 shrink-0">
+                                                                    x{i.quantity}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {i.product?.color && (
+                                                                    <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded border border-gray-300 text-[10px]">
+                                                                        {i.product.color}
+                                                                    </span>
+                                                                )}
+                                                                {i.product?.size && (
+                                                                    <span className="px-1.5 py-0.5 bg-white text-gray-600 rounded border border-gray-300 text-[10px] font-medium">
+                                                                        Size: {i.product.size}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>
