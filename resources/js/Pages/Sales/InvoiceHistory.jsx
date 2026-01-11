@@ -78,7 +78,6 @@ export default function InvoiceHistory({ invoices, filters, auth }) {
 
                     <span className="text-gray-300 hidden md:inline">|</span>
                     
-                    {/* ✨ Ô TÌM KIẾM MỚI ✨ */}
                     <div className="flex-1 min-w-[200px]">
                         <input
                             type="text"
@@ -111,7 +110,7 @@ export default function InvoiceHistory({ invoices, filters, auth }) {
                     </div>
                 </div>
 
-                {/* DANH SÁCH HÓA ĐƠN (Giữ nguyên logic hiển thị) */}
+                {/* DANH SÁCH HÓA ĐƠN  */}
                 <div className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-blue-600 text-white">
@@ -223,7 +222,6 @@ export default function InvoiceHistory({ invoices, filters, auth }) {
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />
                                 ) : (
-                                    // Trường hợp URL là null (Trang trước/Trang sau bị disable): Hiển thị thẻ span
                                     <span
                                         key={key}
                                         className="px-3 py-1 text-sm border rounded text-gray-400 bg-gray-100 cursor-not-allowed"

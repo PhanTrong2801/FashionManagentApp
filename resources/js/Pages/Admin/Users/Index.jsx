@@ -69,7 +69,30 @@ export default function UserIndex({ users }) {
                 
                 {/* Pagination links */}
                 <div className="p-4">
-                   {/* Bạn có thể copy component Pagination từ các trang trước vào đây */}
+                    {users.links && users.links.length > 3 && (
+                        <div className="flex justify-center gap-1">
+                            {users.links.map((link, i) => (
+                                link.url ? (
+                                    <Link
+                                        key={i}
+                                        href={link.url}
+                                        className={`px-3 py-1 border rounded text-sm ${
+                                            link.active 
+                                                ? 'bg-blue-600 text-white border-blue-600' 
+                                                : 'bg-white text-gray-600 hover:bg-gray-100'
+                                        }`}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                ) : (
+                                    <span
+                                        key={i}
+                                        className="px-3 py-1 border rounded text-sm text-gray-400 bg-gray-50 cursor-not-allowed"
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                )
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </AdminLayout>

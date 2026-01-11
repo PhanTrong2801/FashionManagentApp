@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout"; 
 
-// --- CÁC HÀM HELPER ---
 
 // Hàm helper để định dạng tiền tệ
 const formatCurrency = (amount) => {
@@ -40,12 +39,11 @@ export default function Shifts({ activeShift, shifts, liveRevenue, bankOrders })
     // Xử lý dữ liệu đầu vào (Hỗ trợ phân trang Laravel hoặc Array thường)
     const shiftsList = shifts.data ? shifts.data : (Array.isArray(shifts) ? shifts : []);
     const paginationLinks = shifts.links || [];
-    const safeBankOrders = bankOrders || []; // Đảm bảo không lỗi nếu bankOrders null
+    const safeBankOrders = bankOrders || []; 
 
     // Tính tổng tiền chuyển khoản để hiển thị đối soát
     const totalBankAmount = safeBankOrders.reduce((sum, order) => sum + Number(order.total_amount), 0);
 
-    // --- CÁC HÀM XỬ LÝ ---
 
     // Mở ca
     const startShift = () => {
@@ -94,7 +92,7 @@ export default function Shifts({ activeShift, shifts, liveRevenue, bankOrders })
                     </Link>
                 </div>
 
-                {/* --- KHU VỰC TRẠNG THÁI CA (ACTIVE SHIFT) --- */}
+                {/* --- KHU VỰC TRẠNG THÁI CA  --- */}
                 <div className={`mb-8 p-6 rounded-xl shadow-lg border-t-4 ${activeShift ? 'bg-white border-green-500' : 'bg-white border-gray-400'}`}>
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -219,9 +217,7 @@ export default function Shifts({ activeShift, shifts, liveRevenue, bankOrders })
                             </div>
                         </div>
                     ) : (
-                        // ============================================
                         // GIAO DIỆN KHI CHƯA CÓ CA (MỞ CA MỚI)
-                        // ============================================
                         <div className="bg-green-50 p-6 rounded-lg border border-green-100 text-center md:text-left flex flex-col md:flex-row items-center gap-6 shadow-sm">
                             <div className="flex-1">
                                 <h3 className="text-xl font-bold text-green-800 mb-2">👋 Chào bạn, bắt đầu ngày làm việc mới?</h3>

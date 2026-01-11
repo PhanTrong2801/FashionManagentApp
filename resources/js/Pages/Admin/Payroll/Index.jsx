@@ -138,7 +138,7 @@ const EditRateModal = ({ user, onClose }) => {
 export default function PayrollIndex({ payroll, filters }) {
     const [month, setMonth] = useState(filters.month);
     const [year, setYear] = useState(filters.year);
-    const [editingUser, setEditingUser] = useState(null); // State để mở Modal
+    const [editingUser, setEditingUser] = useState(null); 
     const [viewingUser, setViewingUser] = useState(null);
 
     const handleFilter = () => {

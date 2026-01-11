@@ -21,7 +21,7 @@ class AttendanceController extends Controller
             ->first();
 
         if ($activeSession) {
-            // --- LOGIC CHECK OUT ---
+            // LOGIC CHECK OUT 
             $checkOutTime = now();
             $checkInTime = Carbon::parse($activeSession->check_in);
             
@@ -39,7 +39,7 @@ class AttendanceController extends Controller
 
             return back()->with('success', "Đã kết thúc ca làm việc. Tổng: {$minutes} phút.");
         } else {
-            // --- LOGIC CHECK IN ---
+            //LOGIC CHECK IN 
             WorkSession::create([
                 'user_id' => $user->id,
                 'check_in' => now(),

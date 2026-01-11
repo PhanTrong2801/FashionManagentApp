@@ -149,7 +149,6 @@ export default function Customers({ customers: initialCustomers, search: initial
                         </thead>
 
                         <tbody>
-                            {/* ✨ SỬA: Dùng customerList (là initialCustomers.data) */}
                             {customerList.length === 0 ? (
                                 <tr>
                                     <td colSpan="6" className="text-center py-10 text-gray-500 text-lg">
@@ -182,7 +181,7 @@ export default function Customers({ customers: initialCustomers, search: initial
                         </tbody>
                     </table>
 
-                    {/* ✨ PHẦN PHÂN TRANG (PAGINATION) MỚI ✨ */}
+                    {/* PHẦN PHÂN TRANG (PAGINATION)*/}
                     {paginationLinks.length > 3 && (
                         <div className="p-4 border-t flex justify-center flex-wrap gap-1 bg-gray-50">
                             {paginationLinks.map((link, i) => (
@@ -242,7 +241,7 @@ export default function Customers({ customers: initialCustomers, search: initial
                 </CustomModal>
             )}
 
-            {/* ... Modal Xóa và Toast giữ nguyên ... */}
+            {/* ... Modal Xóa và Toast  ... */}
             {deleteConfirmationModal && customerToDelete && (
                 <CustomModal title="Xác nhận Xóa Khách hàng" onClose={() => setDeleteConfirmationModal(false)} actions={
                     <>

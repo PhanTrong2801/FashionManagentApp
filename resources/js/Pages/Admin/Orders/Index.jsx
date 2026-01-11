@@ -6,7 +6,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 const formatCurrency = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
 const formatDateTime = (d) => new Date(d).toLocaleString('vi-VN');
 
-// --- MODAL CHI TIẾT & CHỈNH SỬA ĐƠN HÀNG ---
+//  MODAL CHI TIẾT & CHỈNH SỬA ĐƠN HÀNG 
 const OrderDetailModal = ({ order, onClose }) => {
     const [isEditing, setIsEditing] = useState(false);
 
@@ -147,7 +147,7 @@ const OrderDetailModal = ({ order, onClose }) => {
                                 </tbody>
                             </table>
                             
-                            {/* --- 5. HIỂN THỊ TIỀN KHÁCH ĐƯA VÀ TIỀN THỪA --- */}
+                            {/* ---  HIỂN THỊ TIỀN KHÁCH ĐƯA VÀ TIỀN THỪA --- */}
                             <div className="flex flex-col items-end gap-1 mt-4 border-t pt-4">
                                 <div className="flex justify-between w-64 text-sm">
                                     <span className="text-gray-600">Tổng tiền hàng:</span>
@@ -166,7 +166,7 @@ const OrderDetailModal = ({ order, onClose }) => {
                             </div>
                         </>
                     ) : (
-                        /* --- CHẾ ĐỘ CHỈNH SỬA */
+                        /*  CHẾ ĐỘ CHỈNH SỬA */
                         <div className="space-y-4">
                             <div className="bg-yellow-50 border border-yellow-200 p-3 rounded text-sm text-yellow-800 mb-2">
                                 ⚠️ Lưu ý: Việc chỉnh sửa sẽ cập nhật lại tồn kho. Hãy kiểm tra kỹ!

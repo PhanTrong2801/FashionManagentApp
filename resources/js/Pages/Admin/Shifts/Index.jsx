@@ -34,8 +34,7 @@ export default function ShiftIndex({ shifts }) {
                             <th className="p-4 text-right">Vốn đầu ca</th>
                             <th className="p-4 text-right">Tổng Doanh thu</th>
                             <th className="p-4 text-right text-indigo-700">Chuyển khoản</th> 
-                            
-                            {/* ✨ ĐÃ SỬA TÊN CỘT TẠI ĐÂY ✨ */}
+                    
                             <th className="p-4 text-right">Tiền mặt</th>
 
                             <th className="p-4 text-right">Chênh lệch</th>
@@ -75,7 +74,7 @@ export default function ShiftIndex({ shifts }) {
                                         {formatCurrency(shift.total_bank)}
                                     </td>
 
-                                    {/* Dữ liệu Tiền mặt (Closing Cash) */}
+                                    {/* Dữ liệu Tiền mặt  */}
                                     <td className="p-4 text-right font-mono font-medium">
                                         {shift.end_time ? formatCurrency(shift.closing_cash) : '---'}
                                     </td>

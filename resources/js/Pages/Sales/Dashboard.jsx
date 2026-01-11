@@ -39,7 +39,7 @@ const removeVietnameseTones = (str) =>{
 
 
 export default function SalesDashboard({ products: initialProducts, categories: initialCategories, customers: initialCustomers }) {
-    //  Use props or fallback to empty array
+
     const products = initialProducts || [];
     const categories = initialCategories || [];
     const customers = initialCustomers || [];
@@ -97,7 +97,7 @@ export default function SalesDashboard({ products: initialProducts, categories: 
         setProductSearch('');
         setShowSearchDropdown(false);
     }
-    // --- Cart Management Logic ---
+    // --- Logic quan ly gio hang ---
     const switchCart = (id) => setActiveCart(id);
     const addNewCart = () => {
         const newId = Date.now();

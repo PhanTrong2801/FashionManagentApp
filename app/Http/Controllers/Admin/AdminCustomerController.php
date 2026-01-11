@@ -11,7 +11,7 @@ class AdminCustomerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Customer::orderBy('points', 'desc'); // Sắp xếp ai nhiều điểm lên đầu (VIP)
+        $query = Customer::orderBy('points', 'desc'); 
 
         if ($request->search) {
             $query->where('name', 'like', '%' . $request->search . '%')

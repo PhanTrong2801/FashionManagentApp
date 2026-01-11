@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\MonthlyRevenueExport;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\MonthlyRevenueExport;
-use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -17,11 +17,11 @@ class ReportController extends Controller
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
 
-        // 1. Dữ liệu biểu đồ: Gom nhóm doanh thu theo NGÀY trong tháng
+        // Dữ liệu biểu đồ: Gom nhóm doanh thu theo NGÀY trong tháng
         $dailyRevenue = Order::select(
-                DB::raw('DATE(created_at) as date'), 
-                DB::raw('SUM(total_amount) as total')
-            )
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('SUM(total_amount) as total')
+        )
             ->whereMonth('created_at', $month)
             ->whereYear('created_at', $year)
             ->where('status', 'completed')
@@ -31,11 +31,11 @@ class ReportController extends Controller
             ->map(function ($item) {
                 return [
                     'date' => date('d/m', strtotime($item->date)), // Format ngày cho gọn (01/12)
-                    'total' => (int)$item->total
+                    'total' => (int) $item->total,
                 ];
             });
 
-        // 2. Tổng kết số liệu
+        // Tổng kết số liệu
         $totalRevenue = Order::whereMonth('created_at', $month)
             ->whereYear('created_at', $year)
             ->where('status', 'completed')
@@ -50,9 +50,9 @@ class ReportController extends Controller
             'chartData' => $dailyRevenue,
             'summary' => [
                 'revenue' => $totalRevenue,
-                'orders' => $totalOrders
+                'orders' => $totalOrders,
             ],
-            'filters' => ['month' => $month, 'year' => $year]
+            'filters' => ['month' => $month, 'year' => $year],
         ]);
     }
 

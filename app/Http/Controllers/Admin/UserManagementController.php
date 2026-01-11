@@ -14,17 +14,19 @@ class UserManagementController extends Controller
     public function index()
     {
         $users = User::orderBy('id', 'desc')->paginate(10);
+
         return Inertia::render('Admin/Users/Index', [
-            'users' => $users
+            'users' => $users,
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Admin/Users/CreateEdit'); // Form thêm mới
+        return Inertia::render('Admin/Users/CreateEdit');
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
@@ -45,7 +47,7 @@ class UserManagementController extends Controller
     public function edit(User $user)
     {
         return Inertia::render('Admin/Users/CreateEdit', [
-            'user' => $user // Truyền user vào để sửa
+            'user' => $user,
         ]);
     }
 
@@ -53,7 +55,7 @@ class UserManagementController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'role' => 'required|in:admin,user',
         ]);
 
@@ -80,6 +82,7 @@ class UserManagementController extends Controller
             return back()->withErrors(['msg' => 'Không thể tự xóa chính mình!']);
         }
         $user->delete();
+
         return back()->with('success', 'Đã xóa nhân viên!');
     }
 }

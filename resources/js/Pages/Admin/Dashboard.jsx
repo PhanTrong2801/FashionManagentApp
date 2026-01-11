@@ -15,7 +15,7 @@ export default function AdminDashboard({
   totalOrders = 0,
   totalProducts = 0,
   topProducts = [],
-  lowStock = [], // Dữ liệu tồn kho
+  lowStock = [], 
   staffPerformance = [],
   shiftsSummary = [],
 }) {
@@ -30,7 +30,7 @@ export default function AdminDashboard({
           <p className="text-sm text-gray-500">Báo cáo tình hình hoạt động của cửa hàng.</p>
         </header>
 
-        {/* 1. THẺ CHỈ SỐ (KPI CARDS) */}
+        {/* THẺ CHỈ SỐ  */}
         <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
             <div className="text-sm font-medium text-gray-500 uppercase">Hôm nay</div>
@@ -56,7 +56,7 @@ export default function AdminDashboard({
           </div>
         </section>
 
-        {/* 2. TOP SẢN PHẨM & TỒN KHO */}
+        {/*  TOP SẢN PHẨM & TỒN KHO */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Top Sản Phẩm */}
@@ -88,7 +88,7 @@ export default function AdminDashboard({
             </div>
           </div>
 
-          {/* ✨ CẢNH BÁO TỒN KHO (LOW STOCK) ✨ */}
+          {/* CẢNH BÁO TỒN KHO  */}
           <div className="bg-white rounded-xl shadow-sm border border-red-100 p-5">
             <h2 className="text-lg font-bold text-red-700 mb-4 flex items-center gap-2">
                 ⚠️ Cảnh Báo Sắp Hết Hàng 
@@ -127,7 +127,7 @@ export default function AdminDashboard({
           </div>
         </section>
 
-        {/* 3. NHÂN VIÊN & CA LÀM */}
+        {/*  NHÂN VIÊN & CA LÀM */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Hiệu suất nhân viên */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">

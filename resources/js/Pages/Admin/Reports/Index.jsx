@@ -47,7 +47,7 @@ export default function ReportIndex({ chartData, summary, filters }) {
                 </div>
             </div>
 
-            {/* Tổng quan (Summary Cards) */}
+            {/* Tổng quan  */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-xl shadow border-l-4 border-blue-500">
                     <p className="text-gray-500 text-sm uppercase font-bold">Tổng doanh thu (Tháng {month})</p>
